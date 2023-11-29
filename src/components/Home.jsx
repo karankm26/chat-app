@@ -11,13 +11,23 @@ import Captions from "yet-another-react-lightbox/plugins/captions";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/plugins/captions.css";
-import { MdOutlineDeleteOutline, MdModeEditOutline } from "react-icons/md";
+import {
+  MdOutlineDeleteOutline,
+  MdModeEditOutline,
+  MdAddBox,
+  MdGroups,
+} from "react-icons/md";
 import { AiOutlineUser } from "react-icons/ai";
 import { FiLogOut } from "react-icons/fi";
 import Swal from "sweetalert2";
+import { IoSearchOutline } from "react-icons/io5";
+import { HiOutlineDotsVertical } from "react-icons/hi";
+import { RiImageAddFill } from "react-icons/ri";
+import MuiDailog from "./MuiDailog";
 
 const socket = io(API_URL);
 export default function Home() {
+  const dialogRef = useRef(null);
   const navigate = useNavigate();
   const chatContainerRef = useRef();
   const [user, setUsers] = useState([]);
@@ -33,7 +43,7 @@ export default function Home() {
   const [editMessageId, setEditMessageId] = useState(null);
   const currentUser = localStorage.getItem("currentUser");
   const ref = useRef(null);
-
+  const [inviteCode, setInviteCode] = useState("");
   const handleClick = () => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -167,6 +177,19 @@ export default function Home() {
     const userLastMsg = messages.filter((item) => +item.sender === id);
     return userLastMsg[userLastMsg.length - 1]?.message;
   };
+
+  const handleUserSearch = () => {
+    // const searchedUser = user
+  };
+
+  const handleAddUser = () => {
+    console.log("firts");
+    if (dialogRef.current) {
+      dialogRef.current.handleClickOpen();
+    }
+  };
+
+  // console.log(messages);
   return (
     <>
       <div className="container-fluid">
@@ -174,55 +197,65 @@ export default function Home() {
           {/* <div className="col-lg-12 m-0 p-0"> */}
           <div className="card chat-app">
             <div id="plist" className="people-list people-menu">
-              <div className="d-flex justify-content-between align-items-center">
-                <h2>Chats</h2>
-                <div
-                  className="dropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i
-                    className="fa fa-ellipsis-v "
-                    style={{ cursor: "pointer" }}
-                    aria-hidden="true"
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <img
+                    src={LocalData?.image}
+                    className="img-fluid rounded-circle"
+                    style={{ width: "50px" }}
                   />
-                  <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item align-items-center" href="#">
-                        <AiOutlineUser
-                          // style={{ fontSize: "14px" }}
-                          className="ico me-1"
-                        />
-                        Profile
-                      </a>
-                    </li>
-                    <li onClick={() => handleDeleteMessage(item.id)}>
-                      <a
-                        className="dropdown-item align-items-center"
-                        onClick={() => {
-                          localStorage.removeItem("user");
-                          navigate("/login");
-                        }}
-                      >
-                        <FiLogOut className="ico me-1" />
-                        Logout
-                      </a>
-                    </li>
-                  </ul>
+                </div>
+                <div className="headers-icons-group" id="headers-icons-group">
+                  <span className="wrap">
+                    <MdGroups className="ico" />
+                  </span>
+                  <span className="wrap" onClick={handleAddUser}>
+                    <MdAddBox className="ico" />
+                  </span>
+                  <span className="wrap">
+                    <HiOutlineDotsVertical
+                      className="ico"
+                      data-bs-toggle="dropdown"
+                    />
+                  </span>
+                  <div
+                    className="dropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <ul className="dropdown-menu">
+                      <li>
+                        <a
+                          className="dropdown-item align-items-center"
+                          href="#"
+                        >
+                          <AiOutlineUser className="ico me-1" />
+                          Profile
+                        </a>
+                      </li>
+                      <li onClick={() => handleDeleteMessage(item.id)}>
+                        <a
+                          className="dropdown-item align-items-center"
+                          onClick={() => {
+                            localStorage.removeItem("user");
+                            navigate("/login");
+                          }}
+                        >
+                          <FiLogOut className="ico me-1" />
+                          Logout
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
 
               <div className="input-group">
-                <span
-                  className=""
-                  style={{
-                    position: "absolute",
-                    zIndex: 1,
-                    right: 15,
-                    top: 6,
-                  }}
-                >
-                  <i className="fa fa-search" />
+                <span className="search-ico-parent">
+                  <IoSearchOutline
+                    className="search-ico"
+                    style={{ cursor: "pointer" }}
+                  />
                 </span>
                 <input
                   type="text"
@@ -276,12 +309,8 @@ export default function Home() {
             >
               <div className="chat-header clearfix">
                 <div className="row">
-                  <div className="col-lg-6 ">
-                    <a
-                      href="javascript:void(0);"
-                      data-toggle="modal"
-                      data-target="#view_info"
-                    >
+                  <div className="col-12">
+                    <div>
                       <img
                         src={
                           receiverData?.image
@@ -289,41 +318,18 @@ export default function Home() {
                             : "https://bootdey.com/img/Content/avatar/avatar2.png"
                         }
                         alt="avatar"
+                        style={{
+                          width: "43px",
+                          height: "43px",
+                          borderRadius: "50%",
+                        }}
                       />
-                    </a>
+                    </div>
                     <div className="chat-about">
-                      <h6 className="m-b-0">{receiverData?.name}</h6>
+                      <h6 className="m-0">{receiverData?.name}</h6>
                       <small>Last seen: 2 hours ago</small>
                     </div>
                   </div>
-                  {/* <div className="col-lg-6 hidden-sm text-end">
-                      <a
-                        href="javascript:void(0);"
-                        className="btn btn-outline-secondary"
-                      >
-                        <i className="fa fa-camera" />
-                      </a>
-                      <a
-                        href="javascript:void(0);"
-                        className="btn btn-outline-primary"
-                      >
-                        <label htmlFor="image-input">
-                          <i className="fa fa-image" />
-                        </label>
-                      </a>
-                      <a
-                        href="javascript:void(0);"
-                        className="btn btn-outline-info"
-                      >
-                        <i className="fa fa-cogs" />
-                      </a>
-                      <a
-                        href="javascript:void(0);"
-                        className="btn btn-outline-warning"
-                      >
-                        <i className="fa fa-question" />
-                      </a>{" "}
-                    </div> */}
                 </div>
               </div>
               <div className="chat-history" id="style-2">
@@ -434,59 +440,6 @@ export default function Home() {
                         ) : (
                           <li className="clearfix">
                             <div className="message my-message">
-                              {/* <div className="dropdown">
-                                  <span
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                    style={{
-                                      position: "absolute",
-                                      right: "-11px",
-                                      top: "-17px",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    <i
-                                      className="fa fa-angle-down"
-                                      style={{
-                                        fontSize: "13px",
-                                      }}
-                                    />
-                                  </span>
-                                  <ul className="dropdown-menu">
-                                    <li>
-                                      <a
-                                        className="dropdown-item align-items-center"
-                                        href="#"
-                                      >
-                                        <IoIosInformationCircleOutline /> Info
-                                      </a>
-                                    </li>
-                                    <li
-                                      onClick={() =>
-                                        handleDeleteMessage(item.id)
-                                      }
-                                    >
-                                      <a
-                                        className="dropdown-item align-items-center"
-                                        href="#"
-                                      >
-                                        <MdOutlineDeleteOutline />
-                                        Delete
-                                      </a>
-                                    </li>
-                                    <li
-                                      onClick={() => handleUpdateMessage(item)}
-                                    >
-                                      <a
-                                        className="dropdown-item align-items-center"
-                                        href="#"
-                                      >
-                                        <MdModeEditOutline />
-                                        Edit
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div> */}
                               <div>
                                 {item.image ? (
                                   <img
@@ -505,7 +458,7 @@ export default function Home() {
                               </div>
                               <div
                                 style={
-                                  item.status === 1
+                                  item.status === 3
                                     ? {
                                         fontStyle: "italic",
                                         color: "rgb(255,255,255,0.4)",
@@ -539,65 +492,62 @@ export default function Home() {
                 </ul>
               </div>
               <div className="chat-message clearfix ">
-                <div className="row">
-                  <div className="col-1">
-                    {" "}
-                    <a
-                      href="javascript:void(0);"
-                      className="btn btn-outline-primary"
-                    >
-                      <label htmlFor="image-input">
-                        <i className="fa fa-image" />
-                      </label>
-                    </a>
-                  </div>
-                  <div className="col-11">
-                    <form onSubmit={sendMessage}>
-                      <div className="input-group mb-0 col-lg-2">
-                        <input
-                          type="file"
-                          id="image-input"
-                          hidden
-                          accept="image/*"
-                          onChange={handleImageChange}
-                        />
-                        <input
-                          type="text"
-                          className="form-control rounded-pill "
-                          placeholder="Enter text here..."
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                        />{" "}
-                        <div className="ms-1">
-                          <button
-                            className="btn rounded-circle bg-primary "
-                            type="submit"
-                            disabled={!newMessage.trim()}
-                          >
-                            <i
-                              className="fa fa-send text-dark"
-                              style={{ fontSize: "23px" }}
-                            />
-                          </button>
-                        </div>
-                      </div>{" "}
-                    </form>
-                  </div>
+                <div className="">
+                  <a className="btn">
+                    <label htmlFor="image-input">
+                      <RiImageAddFill className="ico" />
+                    </label>
+                  </a>
+                </div>
+                <div className="">
+                  <form onSubmit={sendMessage}>
+                    <div className="input-group mb-0 col-lg-2">
+                      <input
+                        type="file"
+                        id="image-input"
+                        hidden
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                      <input
+                        type="text"
+                        className="form-control rounded-pill "
+                        placeholder="Enter text here..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                      />{" "}
+                      <div className="ms-1">
+                        <button
+                          className="btn send-button rounded-circle "
+                          type="submit"
+                          disabled={!newMessage.trim()}
+                        >
+                          <i
+                            className="fa fa-send"
+                            style={{ fontSize: "23px" }}
+                          />
+                        </button>
+                      </div>
+                    </div>{" "}
+                  </form>
                 </div>
               </div>
             </div>
           </div>
-          {/* </div> */}
         </div>
       </div>
 
       <>
+        {/* For Image views */}
         <Lightbox
           open={open}
           close={() => setOpen(false)}
           plugins={[Zoom, Fullscreen, Thumbnails, Captions]}
           slides={open}
         />
+
+        {/* MUI Dialog */}
+        <MuiDailog ref={dialogRef} setInviteCode={setInviteCode} />
       </>
     </>
   );
