@@ -20,10 +20,13 @@ import {
 import { AiOutlineUser } from "react-icons/ai";
 import { FiLogOut } from "react-icons/fi";
 import Swal from "sweetalert2";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoSearchOutline, IoSend } from "react-icons/io5";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { RiImageAddFill } from "react-icons/ri";
 import MuiDailog from "./MuiDailog";
+import EmojiPicker from "emoji-picker-react";
+import { stylesDate } from "../utils/toggleStyle";
+import { BsEmojiSmile } from "react-icons/bs";
 
 const socket = io(API_URL);
 export default function Home() {
@@ -43,7 +46,8 @@ export default function Home() {
   const [editMessageId, setEditMessageId] = useState(null);
   const currentUser = localStorage.getItem("currentUser");
   const ref = useRef(null);
-  const [inviteCode, setInviteCode] = useState("");
+  const [displayDateRangePicker, setDisplayRangePicker] = useState(false);
+
   const handleClick = () => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -178,6 +182,9 @@ export default function Home() {
     return userLastMsg[userLastMsg.length - 1]?.message;
   };
 
+  const handleDeleteAllMesseges = async () => {
+    await axios.delete(`${API_URL}/messages/${sender}/${receiver}`);
+  };
   const handleUserSearch = () => {
     // const searchedUser = user
   };
@@ -190,6 +197,10 @@ export default function Home() {
   };
 
   // console.log(messages);
+
+  const handleEmojiClick = (e) => {
+    console.log(e.emoji);
+  };
   return (
     <>
       <div className="container-fluid">
@@ -212,11 +223,8 @@ export default function Home() {
                   <span className="wrap" onClick={handleAddUser}>
                     <MdAddBox className="ico" />
                   </span>
-                  <span className="wrap">
-                    <HiOutlineDotsVertical
-                      className="ico"
-                      data-bs-toggle="dropdown"
-                    />
+                  <span className="wrap" data-bs-toggle="dropdown">
+                    <HiOutlineDotsVertical className="ico" />
                   </span>
                   <div
                     className="dropdown"
@@ -307,9 +315,9 @@ export default function Home() {
               className="chat"
               style={receiver ? { display: "block" } : { display: "none" }}
             >
-              <div className="chat-header clearfix">
-                <div className="row">
-                  <div className="col-12">
+              <div className="chat-header clearfix position-relative">
+                <div className="align-items-center">
+                  <div className="">
                     <div>
                       <img
                         src={
@@ -330,19 +338,37 @@ export default function Home() {
                       <small>Last seen: 2 hours ago</small>
                     </div>
                   </div>
+                  <div className="text-end">
+                    <span className="wrap" data-bs-toggle="dropdown">
+                      <HiOutlineDotsVertical className="ico mt-2" />
+                    </span>
+                    <div
+                      className="dropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <ul className="dropdown-menu">
+                        <li onClick={handleDeleteAllMesseges}>
+                          <a
+                            className="dropdown-item align-items-center"
+                            href="#"
+                          >
+                            Delete all messages
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="chat-history" id="style-2">
                 <ul className="m-b-0" ref={chatContainerRef}>
                   {messages.length
-                    ? messages.map((item, index) =>
+                    ? messages.map((item) =>
                         +item.sender === sender ? (
                           <li className="clearfix">
-                            <div>
-                              <div
-                                className="message other-message float-right"
-                                // style={{ position: "relative", right: 0 }}
-                              >
+                            <div className="text-end">
+                              <div className="message other-message ">
                                 <div className="dropdown">
                                   <span
                                     hidden={item.status === 3}
@@ -430,7 +456,7 @@ export default function Home() {
                                   </div>
                                 ) : null}
                               </div>
-                              <div className="message-data text-end message-data-left">
+                              <div className="message-data ">
                                 <span className="message-data-time ">
                                   {formatTimestamp(item.timestamp)}
                                 </span>
@@ -467,7 +493,7 @@ export default function Home() {
                                 }
                               >
                                 {item?.message}
-                              </div>{" "}
+                              </div>
                               {item?.status === 1 ? (
                                 <div
                                   className="m-0 p-0"
@@ -493,42 +519,69 @@ export default function Home() {
               </div>
               <div className="chat-message clearfix ">
                 <div className="">
-                  <a className="btn">
-                    <label htmlFor="image-input">
-                      <RiImageAddFill className="ico" />
-                    </label>
-                  </a>
-                </div>
-                <div className="">
                   <form onSubmit={sendMessage}>
-                    <div className="input-group mb-0 col-lg-2">
+                    <div className="mb-0 position-relative">
                       <input
                         type="file"
                         id="image-input"
                         hidden
                         accept="image/*"
                         onChange={handleImageChange}
-                      />
-                      <input
-                        type="text"
-                        className="form-control rounded-pill "
-                        placeholder="Enter text here..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
                       />{" "}
-                      <div className="ms-1">
-                        <button
-                          className="btn send-button rounded-circle "
-                          type="submit"
-                          disabled={!newMessage.trim()}
-                        >
-                          <i
-                            className="fa fa-send"
-                            style={{ fontSize: "23px" }}
+                      <div className="input-bottom-sender">
+                        {displayDateRangePicker ? (
+                          <div style={stylesDate.popover}>
+                            <div
+                              style={stylesDate.cover}
+                              onClick={() => setDisplayRangePicker(false)}
+                            />
+
+                            <EmojiPicker
+                              theme="dark"
+                              onEmojiClick={handleEmojiClick}
+                            />
+                          </div>
+                        ) : null}
+                        <div className="">
+                          <a className="btn">
+                            <label htmlFor="image-input">
+                              <RiImageAddFill className="ico" />
+                            </label>
+                          </a>
+                        </div>
+                        <div className="d-flex align-items-center">
+                          <BsEmojiSmile
+                            className="ico"
+                            onClick={() =>
+                              setDisplayRangePicker(!displayDateRangePicker)
+                            }
                           />
-                        </button>
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            className="form-control rounded-pill form-control-2"
+                            placeholder="Enter text here..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <button
+                            className="btn send-button rounded-circle"
+                            type="submit"
+                            disabled={!newMessage.trim()}
+                          >
+                            <IoSend
+                              className="text-light"
+                              style={{
+                                fontSize: "23px",
+                              }}
+                            />
+                          </button>
+                        </div>
                       </div>
-                    </div>{" "}
+                    </div>
                   </form>
                 </div>
               </div>
@@ -547,7 +600,7 @@ export default function Home() {
         />
 
         {/* MUI Dialog */}
-        <MuiDailog ref={dialogRef} setInviteCode={setInviteCode} />
+        <MuiDailog ref={dialogRef} setReceiver={setReceiver} />
       </>
     </>
   );

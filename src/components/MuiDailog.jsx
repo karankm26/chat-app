@@ -7,8 +7,9 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useState, forwardRef, useImperativeHandle } from "react";
 
-const MuiDailog = forwardRef((setInviteCode, ref) => {
+const MuiDailog = forwardRef(({ setReceiver }, ref) => {
   const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
   const handleClickOpen = () => {
     console.log(open, "open");
     setOpen(true);
@@ -22,6 +23,11 @@ const MuiDailog = forwardRef((setInviteCode, ref) => {
     handleClickOpen,
     handleClose,
   }));
+
+  const handleSubmit = () => {
+    setReceiver(text);
+    handleClose();
+  };
   return (
     <>
       <Dialog open={open} onClose={handleClose}>
@@ -32,7 +38,7 @@ const MuiDailog = forwardRef((setInviteCode, ref) => {
             below.
           </DialogContentText>
           <TextField
-            onChange={(e) => setInviteCode(e.target.value)}
+            onChange={(e) => setText(e.target.value)}
             className="text-light"
             autoFocus
             margin="dense"
@@ -49,7 +55,7 @@ const MuiDailog = forwardRef((setInviteCode, ref) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Invite</Button>
+          <Button onClick={handleSubmit}>Invite</Button>
         </DialogActions>
       </Dialog>
     </>
