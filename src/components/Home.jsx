@@ -24,30 +24,40 @@ import { IoSearchOutline, IoSend } from "react-icons/io5";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { RiImageAddFill } from "react-icons/ri";
 import MuiDailog from "./MuiDailog";
-import EmojiPicker from "emoji-picker-react";
+import InputEmoji from "react-input-emoji";
 import { stylesDate } from "../utils/toggleStyle";
 import { BsEmojiSmile } from "react-icons/bs";
+import EmojiPicker from "emoji-picker-react";
+import GroupDailog from "./GroupDailog";
+import SingleChat from "./SingleChat";
+import GroupChat from "./GroupChat";
 
 const socket = io(API_URL);
 export default function Home() {
+  const [section, setSection] = useState(null);
+  const inputRef = useRef(null);
+  const groupDialogRef = useRef(null);
   const dialogRef = useRef(null);
   const navigate = useNavigate();
   const chatContainerRef = useRef();
-  const [user, setUsers] = useState([]);
+  // const [user, setFriends] = useState([]);
+  const [friends, setFriends] = useState([]);
   const localStorageData = localStorage.getItem("user");
   const LocalData = localStorageData ? JSON.parse(localStorageData) : null;
   const sender = LocalData?.id;
   const [receiver, setReceiver] = useState("");
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [user, setUser] = useState([]);
   const [receiverData, setReceiverData] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [open, setOpen] = useState(false);
   const [editMessageId, setEditMessageId] = useState(null);
   const currentUser = localStorage.getItem("currentUser");
+  const [groupId, setGroupId] = useState("");
   const ref = useRef(null);
   const [displayDateRangePicker, setDisplayRangePicker] = useState(false);
-
+  const [groups, setGroups] = useState([]);
   const handleClick = () => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -77,45 +87,6 @@ export default function Home() {
     };
   }, [sender, receiver, messages]);
 
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    const findMessage =
-      messages.length && messages.find((item) => item.id === editMessageId);
-    if (findMessage) {
-      await axios.put(`${API_URL}/messages/${editMessageId}`, {
-        message: newMessage,
-      });
-      setNewMessage("");
-    } else {
-      const formData = new FormData();
-      formData.append("sender", sender);
-      formData.append("receiver", receiver);
-      formData.append("message", newMessage.trim());
-
-      if (selectedImage) {
-        formData.append("image", selectedImage);
-      }
-      socket.emit("message", {
-        sender,
-        receiver,
-        message: newMessage,
-        image: selectedImage,
-      });
-
-      try {
-        const response = await axios.post(`${API_URL}/messages`, formData);
-        setMessages([
-          ...messages,
-          { sender, receiver, message: newMessage, image: selectedImage },
-        ]);
-        setNewMessage("");
-        setSelectedImage(null);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  };
-
   const handleImageChange = (e) => {
     setSelectedImage(e.target.files[0]);
   };
@@ -134,17 +105,61 @@ export default function Home() {
   }, [receiver, currentUser]);
 
   useEffect(() => {
-    const fatchdata = async () => {
-      await axios
-        .get(`${API_URL}/user/all`)
-        .then((res) => {
-          const filteredUser = res.data.filter((item) => item.id !== sender);
-          setUsers(filteredUser);
-        })
-        .catch((error) => console.error(error));
+    if (LocalData.id) {
+      const fatchdata = async () => {
+        await axios
+          .get(`${API_URL}/user/${LocalData.id}`)
+          .then((res) => {
+            setUser({
+              ...res.data,
+              friends: res.data.friends
+                ? res.data.friends.split(",").map((item1) => +item1)
+                : [],
+            });
+          })
+          .catch((error) => console.error(error));
+      };
+      fatchdata();
+    }
+  }, [LocalData.id]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const usersResponse = await axios.get(`${API_URL}/user/all`);
+        const filteredUsers = usersResponse.data.filter(
+          (item) =>
+            user.friends &&
+            user.friends.some((friendId) => friendId === item.id)
+        );
+        setFriends(filteredUsers);
+
+        const groupsResponse = await axios.get(`${API_URL}/group`);
+        const filtered = groupsResponse.data
+          .map(({ members, ...rest }) => ({
+            ...rest,
+            members: members
+              .split(",")
+              .map((item) =>
+                item.trim() !== "" && !isNaN(item) ? +item : null
+              )
+              .filter((item) => item !== null),
+          }))
+          .map((item) => {
+            return {
+              ...item,
+              isMember: item.members.some((member) => member === sender),
+            };
+          });
+
+        setGroups(filtered);
+      } catch (error) {
+        console.error(error);
+      }
     };
-    fatchdata();
-  }, []);
+
+    fetchData();
+  }, [user]);
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
@@ -190,17 +205,60 @@ export default function Home() {
   };
 
   const handleAddUser = () => {
-    console.log("firts");
     if (dialogRef.current) {
       dialogRef.current.handleClickOpen();
     }
   };
 
+  const handleAddGroup = () => {
+    if (groupDialogRef.current) {
+      groupDialogRef.current.handleClickOpen();
+    }
+  };
+
   // console.log(messages);
 
+  // const handleEmojiClick = (e) => {
+  //   console.log(e.emoji);
+  //   setNewMessage(newMessage + e.emoji);
+  // };
+
   const handleEmojiClick = (e) => {
-    console.log(e.emoji);
+    const emoji = e.emoji;
+
+    // Get the current cursor position
+    const cursorPosition = inputRef.current.selectionStart;
+    console.log("Cursor Position:", cursorPosition);
+
+    // Split the message into two parts
+    const beforeCursor = newMessage.slice(0, cursorPosition);
+    const afterCursor = newMessage.slice(cursorPosition);
+
+    // Insert the emoji between the two parts
+    const updatedMessage = beforeCursor + emoji + afterCursor;
+
+    // Log intermediate information for debugging
+    console.log("Before Cursor:", beforeCursor);
+    console.log("After Cursor:", afterCursor);
+    console.log("Updated Message:", updatedMessage);
+
+    // Update the state with the new message
+    setNewMessage(updatedMessage);
+
+    // Set the cursor position after the inserted emoji
+    const newCursorPosition = cursorPosition + emoji.length;
+    inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
   };
+
+  // const [groupMembers, setGroupMembers] = useState([]);
+  // useEffect(() => {
+  //   if (Object.keys(groups).length) {
+  //     const memberId = groups?.members?.split(",");
+  //     setGroupMembers(memberId);
+  //     setReceiver(+memberId[0]);
+  //   }
+  // }, [groups]);
+
   return (
     <>
       <div className="container-fluid">
@@ -218,7 +276,7 @@ export default function Home() {
                 </div>
                 <div className="headers-icons-group" id="headers-icons-group">
                   <span className="wrap">
-                    <MdGroups className="ico" />
+                    <MdGroups className="ico" onClick={handleAddGroup} />
                   </span>
                   <span className="wrap" onClick={handleAddUser}>
                     <MdAddBox className="ico" />
@@ -272,14 +330,15 @@ export default function Home() {
                 />
               </div>
               <ul className="list-unstyled chat-list mt-2 mb-0">
-                {user.length ? (
-                  user.map((item, index) => (
+                {friends.length ? (
+                  friends.map((item, index) => (
                     <>
                       {!index && <hr className="m-0 p-0" />}
                       <li
                         className="clearfix"
                         onClick={() => {
                           setReceiver(item.id);
+                          setSection("single");
                           localStorage.setItem("currentUser", item.id);
                         }}
                       >
@@ -305,287 +364,53 @@ export default function Home() {
                 ) : (
                   <li className="clearfix">No Chats Found</li>
                 )}
+                {groups.length
+                  ? groups.map(
+                      (item, index) =>
+                        (item.isMember || item.UserId === sender) && (
+                          <>
+                            {/* {!index && <hr className="m-0 p-0" />} */}
+                            <li
+                              className="clearfix"
+                              onClick={() => {
+                                setGroupId(item.id);
+                                setSection("group");
+                                localStorage.setItem("currentUser", item.id);
+                              }}
+                            >
+                              {" "}
+                              <img
+                                src={
+                                  item?.image
+                                    ? item.image
+                                    : "https://pngtree.com/free-png-vectors/group-icon"
+                                }
+                                alt="avatar"
+                              />
+                              <div className="about">
+                                <div className="name">{item?.group_name}</div>
+                                <div className="status">
+                                  {/* <i className="fa fa-circle offline" /> */}
+                                  {getLastMessage(item.id)}
+                                </div>
+                              </div>
+                            </li>
+                            <hr className="m-0 p-0" />
+                          </>
+                        )
+                    )
+                  : null}
               </ul>
             </div>
-            <div
-              className="chat"
-              style={receiver ? { display: "none" } : { height: "600px" }}
-            ></div>
-            <div
-              className="chat"
-              style={receiver ? { display: "block" } : { display: "none" }}
-            >
-              <div className="chat-header clearfix position-relative">
-                <div className="align-items-center">
-                  <div className="">
-                    <div>
-                      <img
-                        src={
-                          receiverData?.image
-                            ? receiverData?.image
-                            : "https://bootdey.com/img/Content/avatar/avatar2.png"
-                        }
-                        alt="avatar"
-                        style={{
-                          width: "43px",
-                          height: "43px",
-                          borderRadius: "50%",
-                        }}
-                      />
-                    </div>
-                    <div className="chat-about">
-                      <h6 className="m-0">{receiverData?.name}</h6>
-                      <small>Last seen: 2 hours ago</small>
-                    </div>
-                  </div>
-                  <div className="text-end">
-                    <span className="wrap" data-bs-toggle="dropdown">
-                      <HiOutlineDotsVertical className="ico mt-2" />
-                    </span>
-                    <div
-                      className="dropdown"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      <ul className="dropdown-menu">
-                        <li onClick={handleDeleteAllMesseges}>
-                          <a
-                            className="dropdown-item align-items-center"
-                            href="#"
-                          >
-                            Delete all messages
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="chat-history" id="style-2">
-                <ul className="m-b-0" ref={chatContainerRef}>
-                  {messages.length
-                    ? messages.map((item) =>
-                        +item.sender === sender ? (
-                          <li className="clearfix">
-                            <div className="text-end">
-                              <div className="message other-message ">
-                                <div className="dropdown">
-                                  <span
-                                    hidden={item.status === 3}
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                    style={{
-                                      position: "absolute",
-                                      right: "-4px",
-                                      top: "-12px",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    <i
-                                      className="fa fa-angle-down"
-                                      style={{
-                                        fontSize: "13px",
-                                      }}
-                                    />
-                                  </span>
-                                  <ul className="dropdown-menu py-2">
-                                    <li
-                                      onClick={() =>
-                                        handleDeleteMessage(item.id)
-                                      }
-                                    >
-                                      <a
-                                        className="dropdown-item align-items-center"
-                                        href="#"
-                                      >
-                                        <MdOutlineDeleteOutline className="ico" />
-                                        Delete
-                                      </a>
-                                    </li>{" "}
-                                    <li
-                                      onClick={() => handleUpdateMessage(item)}
-                                    >
-                                      <a
-                                        className="dropdown-item align-items-center"
-                                        href="#"
-                                      >
-                                        <MdModeEditOutline className="ico" />
-                                        Edit
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-
-                                <div>
-                                  {item.image ? (
-                                    <img
-                                      style={{ cursor: "pointer" }}
-                                      src={item.image}
-                                      alt="tushar"
-                                      height={150}
-                                      width={150}
-                                      className="rounded"
-                                      onClick={() => {
-                                        // setOpen(item.image);
-                                        handleImageClick(item);
-                                      }}
-                                    />
-                                  ) : null}
-                                </div>
-                                <div
-                                  style={
-                                    item.message === "message deleted"
-                                      ? {
-                                          fontStyle: "italic",
-                                          color: "rgb(255,255,255,0.4)",
-                                        }
-                                      : {}
-                                  }
-                                >
-                                  {item?.message}
-                                </div>
-                                {item?.status === 1 ? (
-                                  <div
-                                    className="m-0 p-0"
-                                    style={{
-                                      fontSize: "10px",
-                                      color: "rgb(255,255,255,0.4)",
-                                    }}
-                                  >
-                                    Edited
-                                  </div>
-                                ) : null}
-                              </div>
-                              <div className="message-data ">
-                                <span className="message-data-time ">
-                                  {formatTimestamp(item.timestamp)}
-                                </span>
-                              </div>
-                            </div>
-                          </li>
-                        ) : (
-                          <li className="clearfix">
-                            <div className="message my-message">
-                              <div>
-                                {item.image ? (
-                                  <img
-                                    style={{ cursor: "pointer" }}
-                                    src={item.image}
-                                    alt="tushar"
-                                    height={150}
-                                    width={150}
-                                    className="rounded"
-                                    onClick={() => {
-                                      // setOpen(item.image);
-                                      handleImageClick(item);
-                                    }}
-                                  />
-                                ) : null}
-                              </div>
-                              <div
-                                style={
-                                  item.status === 3
-                                    ? {
-                                        fontStyle: "italic",
-                                        color: "rgb(255,255,255,0.4)",
-                                      }
-                                    : {}
-                                }
-                              >
-                                {item?.message}
-                              </div>
-                              {item?.status === 1 ? (
-                                <div
-                                  className="m-0 p-0"
-                                  style={{
-                                    fontSize: "10px",
-                                    color: "rgb(255,255,255,0.4)",
-                                  }}
-                                >
-                                  Edited
-                                </div>
-                              ) : null}
-                            </div>
-                            <div className="message-data ">
-                              <span className="message-data-time">
-                                {formatTimestamp(item.timestamp)}
-                              </span>
-                            </div>
-                          </li>
-                        )
-                      )
-                    : "Start Chating"}
-                </ul>
-              </div>
-              <div className="chat-message clearfix ">
-                <div className="">
-                  <form onSubmit={sendMessage}>
-                    <div className="mb-0 position-relative">
-                      <input
-                        type="file"
-                        id="image-input"
-                        hidden
-                        accept="image/*"
-                        onChange={handleImageChange}
-                      />{" "}
-                      <div className="input-bottom-sender">
-                        {displayDateRangePicker ? (
-                          <div style={stylesDate.popover}>
-                            <div
-                              style={stylesDate.cover}
-                              onClick={() => setDisplayRangePicker(false)}
-                            />
-
-                            <EmojiPicker
-                              theme="dark"
-                              onEmojiClick={handleEmojiClick}
-                            />
-                          </div>
-                        ) : null}
-                        <div className="">
-                          <a className="btn">
-                            <label htmlFor="image-input">
-                              <RiImageAddFill className="ico" />
-                            </label>
-                          </a>
-                        </div>
-                        <div className="d-flex align-items-center">
-                          <BsEmojiSmile
-                            className="ico"
-                            onClick={() =>
-                              setDisplayRangePicker(!displayDateRangePicker)
-                            }
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="text"
-                            className="form-control rounded-pill form-control-2"
-                            placeholder="Enter text here..."
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <button
-                            className="btn send-button rounded-circle"
-                            type="submit"
-                            disabled={!newMessage.trim()}
-                          >
-                            <IoSend
-                              className="text-light"
-                              style={{
-                                fontSize: "23px",
-                              }}
-                            />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
+            <>
+              {section === "single" ? (
+                <SingleChat receiver={receiver} />
+              ) : section === "group" ? (
+                <GroupChat groupId={groupId} />
+              ) : (
+                <div className="chat text-dark" style={{ height: "617px" }} />
+              )}
+            </>
           </div>
         </div>
       </div>
@@ -601,6 +426,11 @@ export default function Home() {
 
         {/* MUI Dialog */}
         <MuiDailog ref={dialogRef} setReceiver={setReceiver} />
+        <GroupDailog
+          ref={groupDialogRef}
+          setReceiver={setReceiver}
+          user={friends}
+        />
       </>
     </>
   );

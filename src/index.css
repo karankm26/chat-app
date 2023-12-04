@@ -92,7 +92,7 @@ body {
 }
 
 .chat .chat-history {
-  padding: 20px;
+  padding: 8px;
   border-bottom: 1px solid rgb(255, 255, 255, 0.4);
 }
 
@@ -435,7 +435,9 @@ a {
   opacity: 1;
 }
 .form-control-2 {
+  background-color: #162129 !important;
   border: 1px solid rgb(255, 255, 255, 0.3) !important;
+  /* outline: none !important; */
 }
 
 /* MUI  */
@@ -444,7 +446,8 @@ a {
   background: #223440 !important;
   color: rgb(255, 255, 255, 0.7) !important;
 }
-.css-1t1j96h-MuiPaper-root-MuiDialog-paper .content {
+.css-1t1j96h-MuiPaper-root-MuiDialog-paper .content,
+.MuiChip-label {
   color: rgb(255, 255, 255, 0.7) !important;
 }
 .css-1t1j96h-MuiPaper-root-MuiDialog-paper .MuiInput-underline {
@@ -452,7 +455,36 @@ a {
 }
 .input-bottom-sender {
   display: grid;
-  grid-template-columns: .1fr .1fr 14fr .1fr;
+  grid-template-columns: 0.1fr 0.1fr 14fr 0.1fr;
   column-gap: 20px;
-  justify-self: center;
+  align-items: center;
+}
+.react-input-emoji--input {
+  /* border: 1px solid rgb(255, 255, 255, 0.3) !important; */
+  /* outline: none !important; */
+  /* background-color: #162129 !important; */
+}
+.react-input-emoji--input {
+  outline: none !important;
+  color: rgb(255, 255, 255, 0.9);
+  /* z-index: 1 !important; */
+  /* outline-color: rgb(255, 255, 255, 0.3) !important; */
+}
+.react-input-emoji--container {
+  border: 0 !important;
+}
+/* .css-1nmdiq5-menu,
+.css-13cymwt-control,
+.css-t3ipsp-control {
+  background: #223440 !important;
+  color: rgb(255, 255, 255, 0.7) !important;
+} */
+.css-gavykb-MuiChip-root {
+  background-color: rgb(255, 255, 255, 0.2) !important;
+}
+.css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root {
+  color: rgb(255, 255, 255, 0.7) !important;
+}
+.css-1d3z3hw-MuiOutlinedInput-notchedOutline {
+  border-color: rgb(255, 255, 255, 0.7) !important;
 }

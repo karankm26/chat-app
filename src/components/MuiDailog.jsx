@@ -5,11 +5,18 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useState, forwardRef, useImperativeHandle } from "react";
+import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
+import axios from "axios";
+import { API_URL } from "../config";
 
 const MuiDailog = forwardRef(({ setReceiver }, ref) => {
+  const localStorageData = localStorage.getItem("user");
+  const LocalData = localStorageData ? JSON.parse(localStorageData) : null;
+  const id = LocalData?.id;
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
+  const [user, setUser] = useState([]);
+
   const handleClickOpen = () => {
     console.log(open, "open");
     setOpen(true);
@@ -24,10 +31,37 @@ const MuiDailog = forwardRef(({ setReceiver }, ref) => {
     handleClose,
   }));
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (LocalData.id) {
+      const fatchdata = async () => {
+        await axios
+          .get(`${API_URL}/user/${LocalData.id}`)
+          .then((res) => {
+            setUser({
+              ...res.data,
+              friends: res.data.friends
+                ? res.data.friends.split(",").map((item1) => +item1)
+                : [],
+            });
+          })
+          .catch((error) => console.error(error));
+      };
+      fatchdata();
+    }
+  }, [LocalData.id]);
+
+  const handleSubmit = async () => {
+    let arr = user.friends;
+    arr.push(text);
     setReceiver(text);
-    handleClose();
+    const res = await axios.put(`${API_URL}/user/${id}`, {
+      friends: arr.toString(),
+    });
+    if (res) {
+      handleClose();
+    }
   };
+
   return (
     <>
       <Dialog open={open} onClose={handleClose}>
