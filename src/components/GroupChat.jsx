@@ -30,9 +30,11 @@ import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
 import GroupDailog from "./GroupDailog";
 import { Avatar } from "@mui/material";
+import ImageLightbox from "../utils/ImageLightbox";
 const socket = io(API_URL);
 
 export default function GroupChat({ groupId }) {
+  const imageLightBoxRef = useRef(null);
   const inputRef = useRef(null);
   const groupDialogRef = useRef(null);
   const dialogRef = useRef(null);
@@ -89,26 +91,52 @@ export default function GroupChat({ groupId }) {
   // console.log("messages", messages);
   // console.log("groups", groups);
 
-  const sendMessage = (e) => {
+  const sendMessage = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append("sender", sender);
+    formData.append("receiver", receiver);
+    formData.append("message", newMessage.trim());
+    formData.append("GroupId", groupId);
+
+    if (selectedImage) {
+      formData.append("image", selectedImage);
+    }
     socket.emit("message", {
       sender,
       receiver,
       message: newMessage,
       GroupId: groupId,
     });
-    axios
-      .post(`${API_URL}/messages`, {
-        sender,
-        receiver,
-        message: newMessage,
-        GroupId: groupId,
-      })
-      .then((response) => console.log(response))
-      .catch((error) => console.error(error));
 
-    setMessages([...messages, { sender, receiver, message: newMessage }]);
-    setNewMessage("");
+    try {
+      const response = await axios.post(`${API_URL}/messages`, formData);
+      setMessages([
+        ...messages,
+        { sender, receiver, message: newMessage, image: selectedImage },
+      ]);
+      setNewMessage("");
+      setSelectedImage(null);
+    } catch (error) {
+      console.error(error);
+    }
+    // try {
+    //   axios
+    //     .post(`${API_URL}/messages`, {
+    //       sender,
+    //       receiver,
+    //       message: newMessage,
+    //       GroupId: groupId,
+    //     })
+    //     .then((response) => console.log(response))
+    //     .catch((error) => console.error(error));
+
+    //   setMessages([...messages, { sender, receiver, message: newMessage }]);
+    //   setNewMessage("");
+    //   setSelectedImage(null);
+    // } catch (error) {
+    //   console.error(error);
+    // }
   };
 
   const handleImageChange = (e) => {
@@ -207,7 +235,6 @@ export default function GroupChat({ groupId }) {
     inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
   };
   // console.log(groups);
-  console.log(messages);
   return (
     <div>
       <div className="chat">
@@ -313,8 +340,11 @@ export default function GroupChat({ groupId }) {
                                 width={150}
                                 className="rounded"
                                 onClick={() => {
-                                  // setOpen(item.image);
-                                  handleImageClick(item);
+                                  if (imageLightBoxRef.current) {
+                                    imageLightBoxRef.current.handleImageClick(
+                                      item
+                                    );
+                                  }
                                 }}
                               />
                             ) : null}
@@ -387,8 +417,11 @@ export default function GroupChat({ groupId }) {
                                 width={150}
                                 className="rounded"
                                 onClick={() => {
-                                  // setOpen(item.image);
-                                  handleImageClick(item);
+                                  if (imageLightBoxRef.current) {
+                                    imageLightBoxRef.current.handleImageClick(
+                                      item
+                                    );
+                                  }
                                 }}
                               />
                             ) : null}
@@ -470,18 +503,6 @@ export default function GroupChat({ groupId }) {
                     />
                   </div>
                   <div className="d-flex align-items-center">
-                    {/* <InputEmoji
-                            value={newMessage}
-                            onChange={(e) => {
-                              console.log(e);
-                              setNewMessage(e);
-                            }}
-                            cleanOnEnter
-                            onEnter={sendMessage}
-                            placeholder="Type a message"
-                            inputClass="form-control-2 rounded-pill"
-                            shouldReturn
-                          /> */}
                     <input
                       type="text"
                       className="form-control rounded-pill form-control-2"
@@ -495,7 +516,7 @@ export default function GroupChat({ groupId }) {
                     <button
                       className="btn send-button rounded-circle"
                       type="submit"
-                      disabled={!newMessage.trim()}
+                      disabled={!selectedImage && !newMessage.trim()}
                     >
                       <IoSend
                         className="text-light"
@@ -510,7 +531,8 @@ export default function GroupChat({ groupId }) {
             </form>
           </div>
         </div>
-      </div>
+      </div>{" "}
+      <ImageLightbox ref={imageLightBoxRef} messages={messages} />
     </div>
   );
 }

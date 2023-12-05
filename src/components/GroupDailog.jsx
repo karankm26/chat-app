@@ -61,7 +61,6 @@ const GroupDailog = forwardRef(({ setReceiver, user }, ref) => {
   const handleClickOpen = () => {
     setOpen(true);
   };
-  console.log(user);
   const handleClose = () => {
     setOpen(false);
   };

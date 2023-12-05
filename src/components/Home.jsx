@@ -3,20 +3,7 @@ import axios from "axios";
 import io from "socket.io-client";
 import { API_URL } from "../config";
 import { useNavigate } from "react-router-dom";
-import Lightbox from "yet-another-react-lightbox";
-import Zoom from "yet-another-react-lightbox/plugins/zoom";
-import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
-import Captions from "yet-another-react-lightbox/plugins/captions";
-import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
-import "yet-another-react-lightbox/plugins/captions.css";
-import {
-  MdOutlineDeleteOutline,
-  MdModeEditOutline,
-  MdAddBox,
-  MdGroups,
-} from "react-icons/md";
+import { MdAddBox, MdGroups } from "react-icons/md";
 import { AiOutlineUser } from "react-icons/ai";
 import { FiLogOut } from "react-icons/fi";
 import Swal from "sweetalert2";
@@ -31,6 +18,8 @@ import EmojiPicker from "emoji-picker-react";
 import GroupDailog from "./GroupDailog";
 import SingleChat from "./SingleChat";
 import GroupChat from "./GroupChat";
+import InitialsAvatar from "react-initials-avatar";
+import "react-initials-avatar/lib/ReactInitialsAvatar.css";
 
 const socket = io(API_URL);
 export default function Home() {
@@ -40,7 +29,6 @@ export default function Home() {
   const dialogRef = useRef(null);
   const navigate = useNavigate();
   const chatContainerRef = useRef();
-  // const [user, setFriends] = useState([]);
   const [friends, setFriends] = useState([]);
   const localStorageData = localStorage.getItem("user");
   const LocalData = localStorageData ? JSON.parse(localStorageData) : null;
@@ -56,7 +44,6 @@ export default function Home() {
   const currentUser = localStorage.getItem("currentUser");
   const [groupId, setGroupId] = useState("");
   const ref = useRef(null);
-  const [displayDateRangePicker, setDisplayRangePicker] = useState(false);
   const [groups, setGroups] = useState([]);
   const handleClick = () => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
@@ -67,8 +54,19 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (currentUser) setReceiver(+currentUser);
+    if (currentUser) {
+      if (isNaN(currentUser)) {
+        const gId = +currentUser.split(",")[0];
+        setGroupId(gId);
+        setSection("group");
+      } else {
+        setReceiver(+currentUser);
+        setSection("single");
+      }
+    }
   }, [currentUser]);
+
+  console.log(groupId, receiver);
 
   useEffect(() => {
     if (sender && receiver) {
@@ -259,6 +257,7 @@ export default function Home() {
   //   }
   // }, [groups]);
 
+  // console.log(friends, groups);
   return (
     <>
       <div className="container-fluid">
@@ -335,21 +334,29 @@ export default function Home() {
                     <>
                       {!index && <hr className="m-0 p-0" />}
                       <li
-                        className="clearfix"
+                        className="clearfix d-flex"
                         onClick={() => {
                           setReceiver(item.id);
                           setSection("single");
                           localStorage.setItem("currentUser", item.id);
                         }}
                       >
-                        <img
-                          src={
-                            item?.image
-                              ? item.image
-                              : "https://bootdey.com/img/Content/avatar/avatar2.png"
-                          }
-                          alt="avatar"
-                        />
+                        <div>
+                          {item?.image ? (
+                            <img
+                              src={
+                                item?.image
+                                  ? item.image
+                                  : "https://bootdey.com/img/Content/avatar/avatar2.png"
+                              }
+                              alt="avatar"
+                            />
+                          ) : (
+                            <div>
+                              <InitialsAvatar name={item?.name} />
+                            </div>
+                          )}
+                        </div>
                         <div className="about">
                           <div className="name">{item?.name}</div>
                           <div className="status">
@@ -375,7 +382,10 @@ export default function Home() {
                               onClick={() => {
                                 setGroupId(item.id);
                                 setSection("group");
-                                localStorage.setItem("currentUser", item.id);
+                                localStorage.setItem(
+                                  "currentUser",
+                                  item.id + ",g"
+                                );
                               }}
                             >
                               {" "}
@@ -408,7 +418,12 @@ export default function Home() {
               ) : section === "group" ? (
                 <GroupChat groupId={groupId} />
               ) : (
-                <div className="chat text-dark" style={{ height: "617px" }} />
+                <div
+                  className="chat text-light text-center top-50"
+                  style={{ height: "100vh" }}
+                >
+                  Get Started
+                </div>
               )}
             </>
           </div>
@@ -416,14 +431,6 @@ export default function Home() {
       </div>
 
       <>
-        {/* For Image views */}
-        <Lightbox
-          open={open}
-          close={() => setOpen(false)}
-          plugins={[Zoom, Fullscreen, Thumbnails, Captions]}
-          slides={open}
-        />
-
         {/* MUI Dialog */}
         <MuiDailog ref={dialogRef} setReceiver={setReceiver} />
         <GroupDailog

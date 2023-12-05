@@ -29,11 +29,12 @@ import { stylesDate } from "../utils/toggleStyle";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
 import GroupDailog from "./GroupDailog";
+import ImageLightbox from "../utils/ImageLightbox";
 const socket = io(API_URL);
 
 export default function SingleChat({ receiver }) {
   const inputRef = useRef(null);
-  const groupDialogRef = useRef(null);
+  const imageLightBoxRef = useRef(null);
   const dialogRef = useRef(null);
   const [user, setUsers] = useState([]);
   const localStorageData = localStorage.getItem("user");
@@ -53,6 +54,7 @@ export default function SingleChat({ receiver }) {
   //   useEffect(() => {
   //     if (currentUser) setReceiver(+currentUser);
   //   }, [currentUser]);
+
   useEffect(() => {
     if (sender && receiver) {
       socket.emit("join", { sender, receiver });
@@ -136,7 +138,6 @@ export default function SingleChat({ receiver }) {
         setUsers(filteredUser);
 
         const groupsResponse = await axios.get(`${API_URL}/group`);
-        console.log(groupsResponse.data);
         setGroups(groupsResponse.data);
       } catch (error) {
         console.error(error);
@@ -145,8 +146,6 @@ export default function SingleChat({ receiver }) {
 
     fetchData();
   }, []);
-
-  console.log(user, groups);
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
@@ -313,8 +312,11 @@ export default function SingleChat({ receiver }) {
                                 width={150}
                                 className="rounded"
                                 onClick={() => {
-                                  // setOpen(item.image);
-                                  handleImageClick(item);
+                                  if (imageLightBoxRef.current) {
+                                    imageLightBoxRef.current.handleImageClick(
+                                      item
+                                    );
+                                  }
                                 }}
                               />
                             ) : null}
@@ -363,8 +365,11 @@ export default function SingleChat({ receiver }) {
                               width={150}
                               className="rounded"
                               onClick={() => {
-                                // setOpen(item.image);
-                                handleImageClick(item);
+                                if (imageLightBoxRef.current) {
+                                  imageLightBoxRef.current.handleImageClick(
+                                    item
+                                  );
+                                }
                               }}
                             />
                           ) : null}
@@ -393,7 +398,7 @@ export default function SingleChat({ receiver }) {
                           </div>
                         ) : null}
                       </div>
-                      <div className="message-data" >
+                      <div className="message-data">
                         <span className="message-data-time">
                           {formatTimestamp(item.timestamp)}
                         </span>
@@ -403,7 +408,7 @@ export default function SingleChat({ receiver }) {
                 )
               : "Start Chating"}
           </ul>
-        <div style={{ zIndex: 999 }}>ddddd</div>
+          <div style={{ zIndex: 999 }}>ddddd</div>
         </div>
         <div className="chat-message clearfix ">
           <div className="">
@@ -446,18 +451,6 @@ export default function SingleChat({ receiver }) {
                     />
                   </div>
                   <div className="d-flex align-items-center">
-                    {/* <InputEmoji
-                            value={newMessage}
-                            onChange={(e) => {
-                              console.log(e);
-                              setNewMessage(e);
-                            }}
-                            cleanOnEnter
-                            onEnter={sendMessage}
-                            placeholder="Type a message"
-                            inputClass="form-control-2 rounded-pill"
-                            shouldReturn
-                          /> */}
                     <input
                       type="text"
                       className="form-control rounded-pill form-control-2"
@@ -487,6 +480,7 @@ export default function SingleChat({ receiver }) {
           </div>
         </div>
       </div>
+      <ImageLightbox ref={imageLightBoxRef} messages={messages} />
     </div>
   );
 }
