@@ -343,14 +343,7 @@ export default function Home() {
                       >
                         <div>
                           {item?.image ? (
-                            <img
-                              src={
-                                item?.image
-                                  ? item.image
-                                  : "https://bootdey.com/img/Content/avatar/avatar2.png"
-                              }
-                              alt="avatar"
-                            />
+                            <img src={item?.image} alt="avatar" />
                           ) : (
                             <div>
                               <InitialsAvatar name={item?.name} />

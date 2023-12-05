@@ -491,3 +491,8 @@ a {
 .initials-avatar {
   background-color: #223440 !important;
 }
+.grp-ico > .initials-avatar {
+  width: 25px;
+  height: 25px;
+  background-color: rgb(255, 255, 255, 0.3) !important;
+}

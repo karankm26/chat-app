@@ -2,34 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import io from "socket.io-client";
 import { API_URL } from "../config";
-import { useNavigate } from "react-router-dom";
-import Lightbox from "yet-another-react-lightbox";
-import Zoom from "yet-another-react-lightbox/plugins/zoom";
-import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
-import Captions from "yet-another-react-lightbox/plugins/captions";
-import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
-import "yet-another-react-lightbox/plugins/captions.css";
-import {
-  MdOutlineDeleteOutline,
-  MdModeEditOutline,
-  MdAddBox,
-  MdGroups,
-} from "react-icons/md";
-import { AiOutlineUser } from "react-icons/ai";
-import { FiLogOut } from "react-icons/fi";
-import Swal from "sweetalert2";
-import { IoSearchOutline, IoSend } from "react-icons/io5";
+import { MdOutlineDeleteOutline, MdModeEditOutline } from "react-icons/md";
+import { IoSend } from "react-icons/io5";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { RiImageAddFill } from "react-icons/ri";
-import MuiDailog from "./MuiDailog";
-import InputEmoji from "react-input-emoji";
 import { stylesDate } from "../utils/toggleStyle";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
-import GroupDailog from "./GroupDailog";
 import ImageLightbox from "../utils/ImageLightbox";
+import InitialsAvatar from "react-initials-avatar";
+import "react-initials-avatar/lib/ReactInitialsAvatar.css";
+
 const socket = io(API_URL);
 
 export default function SingleChat({ receiver }) {
@@ -50,10 +33,6 @@ export default function SingleChat({ receiver }) {
   const ref = useRef(null);
   const [displayDateRangePicker, setDisplayRangePicker] = useState(false);
   const [groups, setGroups] = useState([]);
-
-  //   useEffect(() => {
-  //     if (currentUser) setReceiver(+currentUser);
-  //   }, [currentUser]);
 
   useEffect(() => {
     if (sender && receiver) {
@@ -204,6 +183,8 @@ export default function SingleChat({ receiver }) {
     const newCursorPosition = cursorPosition + emoji.length;
     inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
   };
+
+  console.log(receiverData);
   return (
     <div>
       <div
@@ -211,29 +192,39 @@ export default function SingleChat({ receiver }) {
         style={receiver ? { display: "block" } : { display: "none" }}
       >
         <div className="chat-header clearfix position-relative">
-          <div className="align-items-center">
-            <div className="">
-              <div>
-                <img
-                  src={
-                    receiverData?.image
-                      ? receiverData?.image
-                      : "https://bootdey.com/img/Content/avatar/avatar2.png"
-                  }
-                  alt="avatar"
-                  style={{
-                    width: "43px",
-                    height: "43px",
-                    borderRadius: "50%",
-                  }}
-                />
+          <div className=" d-flex justify-content-between align-items-center">
+            <div className="d-flex">
+              <div className="">
+                {receiverData?.image ? (
+                  <div>
+                    <img
+                      src={
+                        receiverData?.image
+                          ? receiverData?.image
+                          : "https://bootdey.com/img/Content/avatar/avatar2.png"
+                      }
+                      alt="avatar"
+                      style={{
+                        width: "43px",
+                        height: "43px",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    {receiverData?.name && (
+                      <InitialsAvatar name={receiverData?.name} />
+                    )}
+                  </div>
+                )}
               </div>
               <div className="chat-about">
                 <h6 className="m-0">{receiverData?.name}</h6>
                 <small>Last seen: 2 hours ago</small>
               </div>
             </div>
-            <div className="text-end">
+            <div className="">
               <span className="wrap" data-bs-toggle="dropdown">
                 <HiOutlineDotsVertical className="ico mt-2" />
               </span>

@@ -31,6 +31,8 @@ import EmojiPicker from "emoji-picker-react";
 import GroupDailog from "./GroupDailog";
 import { Avatar } from "@mui/material";
 import ImageLightbox from "../utils/ImageLightbox";
+import InitialsAvatar from "react-initials-avatar";
+import "react-initials-avatar/lib/ReactInitialsAvatar.css";
 const socket = io(API_URL);
 
 export default function GroupChat({ groupId }) {
@@ -383,16 +385,22 @@ export default function GroupChat({ groupId }) {
                   ) : (
                     <li className="clearfix">
                       <div className="d-flex">
-                        <div className="me-1">
-                          <Avatar
-                            alt="Group icon"
-                            src={
-                              item?.sender_Details?.image
-                                ? item?.sender_Details?.image
-                                : "/static/images/avatar/1.jpg"
-                            }
-                            sx={{ width: 25, height: 25 }}
-                          />
+                        <div className="me-1 grp-ico">
+                          {item?.sender_Details?.image ? (
+                            <Avatar
+                              alt="Group icon"
+                              src={item?.sender_Details?.image}
+                              sx={{ width: 25, height: 25 }}
+                            />
+                          ) : (
+                            <>
+                              {item?.sender_Details?.name && (
+                                <InitialsAvatar
+                                  name={item?.sender_Details?.name}
+                                />
+                              )}
+                            </>
+                          )}
                         </div>
                         <div className="message my-message">
                           <div className="mb-3 mx-4">
