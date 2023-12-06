@@ -12,14 +12,14 @@ import EmojiPicker from "emoji-picker-react";
 import ImageLightbox from "../utils/ImageLightbox";
 import InitialsAvatar from "react-initials-avatar";
 import "react-initials-avatar/lib/ReactInitialsAvatar.css";
+import { Card, CardMedia, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const socket = io(API_URL);
 
 export default function SingleChat({ receiver }) {
   const inputRef = useRef(null);
   const imageLightBoxRef = useRef(null);
-  const dialogRef = useRef(null);
-  const [user, setUsers] = useState([]);
   const localStorageData = localStorage.getItem("user");
   const LocalData = localStorageData ? JSON.parse(localStorageData) : null;
   const sender = LocalData?.id;
@@ -27,12 +27,11 @@ export default function SingleChat({ receiver }) {
   const [newMessage, setNewMessage] = useState("");
   const [receiverData, setReceiverData] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [open, setOpen] = useState(false);
   const [editMessageId, setEditMessageId] = useState(null);
   const currentUser = localStorage.getItem("currentUser");
   const ref = useRef(null);
   const [displayDateRangePicker, setDisplayRangePicker] = useState(false);
-  const [groups, setGroups] = useState([]);
+  const [showSelectedImage, setShowSelectedImage] = useState(false);
 
   useEffect(() => {
     if (sender && receiver) {
@@ -83,6 +82,7 @@ export default function SingleChat({ receiver }) {
           { sender, receiver, message: newMessage, image: selectedImage },
         ]);
         setNewMessage("");
+        setShowSelectedImage(false);
         setSelectedImage(null);
       } catch (error) {
         console.error(error);
@@ -91,6 +91,8 @@ export default function SingleChat({ receiver }) {
   };
 
   const handleImageChange = (e) => {
+    setShowSelectedImage(true);
+
     setSelectedImage(e.target.files[0]);
   };
 
@@ -107,25 +109,6 @@ export default function SingleChat({ receiver }) {
     fatchdata();
   }, [receiver, currentUser]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersResponse = await axios.get(`${API_URL}/user/all`);
-        const filteredUser = usersResponse.data.filter(
-          (item) => item.id !== sender
-        );
-        setUsers(filteredUser);
-
-        const groupsResponse = await axios.get(`${API_URL}/group`);
-        setGroups(groupsResponse.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     const formattedTime = date.toLocaleTimeString([], {
@@ -134,19 +117,6 @@ export default function SingleChat({ receiver }) {
     });
 
     return formattedTime;
-  };
-
-  const handleImageClick = (item) => {
-    const filteredImages = messages
-      .filter((i) => i.image && i.id !== item.id)
-      .map(({ image, message }) => ({
-        src: image,
-        ...(message ? { description: message } : {}),
-      }));
-    const clickedImage = item.message
-      ? { description: item.message, src: item.image }
-      : { src: item.image };
-    setOpen([clickedImage, ...filteredImages]);
   };
 
   const handleDeleteMessage = async (id) => {
@@ -165,14 +135,6 @@ export default function SingleChat({ receiver }) {
   const handleDeleteAllMesseges = async () => {
     await axios.delete(`${API_URL}/messages/${sender}/${receiver}`);
   };
-
-  const handleAddUser = () => {
-    console.log("firts");
-    if (dialogRef.current) {
-      dialogRef.current.handleClickOpen();
-    }
-  };
-
   const handleEmojiClick = (e) => {
     const emoji = e.emoji;
     const cursorPosition = inputRef.current.selectionStart;
@@ -184,7 +146,6 @@ export default function SingleChat({ receiver }) {
     inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
   };
 
-  console.log(receiverData);
   return (
     <div>
       <div
@@ -247,9 +208,9 @@ export default function SingleChat({ receiver }) {
         <div className="chat-history" id="style-2">
           <ul className="m-b-0">
             {messages.length
-              ? messages.map((item) =>
+              ? messages.map((item, index) =>
                   +item.sender === sender ? (
-                    <li className="clearfix">
+                    <li className="clearfix" key={index}>
                       <div className="text-end">
                         <div className="message other-message ">
                           <div className="dropdown">
@@ -399,7 +360,37 @@ export default function SingleChat({ receiver }) {
                 )
               : "Start Chating"}
           </ul>
-          <div style={{ zIndex: 999 }}>ddddd</div>
+        </div>
+        <div className="position-relative">
+          {showSelectedImage ? (
+            <div>
+              <div className="position-absolute selected-image ">
+                <Card
+                  sx={{ maxWidth: 300, bgcolor: "rgb(34,52,64),", p: 1 }}
+                  className="shadow "
+                >
+                  <div className="text-end">
+                    <IconButton
+                      aria-label="settings"
+                      sx={{ p: 0 }}
+                      onClick={() => {
+                        setSelectedImage(null);
+                        setShowSelectedImage(false);
+                      }}
+                    >
+                      <CloseIcon sx={{ color: "rgb(255, 255, 255, 0.3)" }} />
+                    </IconButton>
+                  </div>
+                  <CardMedia
+                    component="img"
+                    height="190"
+                    image={selectedImage && URL.createObjectURL(selectedImage)}
+                    alt="Paella dish"
+                  />
+                </Card>
+              </div>
+            </div>
+          ) : null}
         </div>
         <div className="chat-message clearfix ">
           <div className="">

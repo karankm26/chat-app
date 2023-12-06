@@ -1,6 +1,4 @@
-// frontend/src/App.js
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Chat from "./components/Chat";
 import Login from "./components/Login";
 import Registration from "./components/Registration";
 import ProtectedRoute from "./ProtectedRoute";

@@ -443,7 +443,7 @@ a {
 /* MUI  */
 
 .css-1t1j96h-MuiPaper-root-MuiDialog-paper {
-  background: #223440 !important;
+  background-color: #223440 !important;
   color: rgb(255, 255, 255, 0.7) !important;
 }
 .css-1t1j96h-MuiPaper-root-MuiDialog-paper .content,
@@ -495,4 +495,46 @@ a {
   width: 25px;
   height: 25px;
   background-color: rgb(255, 255, 255, 0.3) !important;
+}
+.deleted-message {
+  font-style: italic;
+  color: rgb(255, 255, 255, 0.4);
+}
+.selected-image {
+  left: 128px;
+  top: -234px;
+  z-index: 1;
+}
+.selected-image .card {
+  width: 170px;
+  /* height: 50; */
+}
+.css-oreper-MuiPaper-root-MuiCard-root {
+  background-color: rgb(34, 52, 64) !important;
+}
+
+/* React Emoji Custom class */
+.EmojiPickerReact,
+li.epr-emoji-category > .epr-emoji-category-label {
+  background-color: rgb(34, 52, 64) !important;
+}
+input.epr-search {
+  background-color: #151f27 !important;
+}
+
+.epr-body::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background-color: rgb(255, 255, 255, 0.1);
+}
+
+.epr-body::-webkit-scrollbar {
+  width: 5px;
+  background-color: rgb(255, 255, 255, 0.1);
+}
+
+.epr-body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #162129;
 }

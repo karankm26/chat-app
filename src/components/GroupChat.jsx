@@ -2,34 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import io from "socket.io-client";
 import { API_URL } from "../config";
-import { useNavigate } from "react-router-dom";
-import Lightbox from "yet-another-react-lightbox";
-import Zoom from "yet-another-react-lightbox/plugins/zoom";
-import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
-import Captions from "yet-another-react-lightbox/plugins/captions";
-import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
-import "yet-another-react-lightbox/plugins/captions.css";
-import {
-  MdOutlineDeleteOutline,
-  MdModeEditOutline,
-  MdAddBox,
-  MdGroups,
-} from "react-icons/md";
-import { AiOutlineUser } from "react-icons/ai";
-import { FiLogOut } from "react-icons/fi";
-import Swal from "sweetalert2";
-import { IoSearchOutline, IoSend } from "react-icons/io5";
+import { MdOutlineDeleteOutline, MdModeEditOutline } from "react-icons/md";
+import { AiOutlineStop } from "react-icons/ai";
+import { IoSend } from "react-icons/io5";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { RiImageAddFill } from "react-icons/ri";
-import MuiDailog from "./MuiDailog";
-import InputEmoji from "react-input-emoji";
+import CloseIcon from "@mui/icons-material/Close";
 import { stylesDate } from "../utils/toggleStyle";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
-import GroupDailog from "./GroupDailog";
-import { Avatar } from "@mui/material";
+import { Avatar, Card, CardMedia, IconButton } from "@mui/material";
 import ImageLightbox from "../utils/ImageLightbox";
 import InitialsAvatar from "react-initials-avatar";
 import "react-initials-avatar/lib/ReactInitialsAvatar.css";
@@ -38,41 +20,21 @@ const socket = io(API_URL);
 export default function GroupChat({ groupId }) {
   const imageLightBoxRef = useRef(null);
   const inputRef = useRef(null);
-  const groupDialogRef = useRef(null);
   const dialogRef = useRef(null);
-  const [user, setUsers] = useState([]);
   const localStorageData = localStorage.getItem("user");
   const LocalData = localStorageData ? JSON.parse(localStorageData) : null;
   const sender = LocalData?.id;
   const [receiver, setReceiver] = useState("");
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [receiverData, setReceiverData] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [open, setOpen] = useState(false);
   const [editMessageId, setEditMessageId] = useState(null);
   const currentUser = localStorage.getItem("currentUser");
   const ref = useRef(null);
   const [displayDateRangePicker, setDisplayRangePicker] = useState(false);
+  const [showSelectedImage, setShowSelectedImage] = useState(false);
   const [groups, setGroups] = useState([]);
-
-  const randomColor = [
-    "#1ed760",
-    "#d7601e",
-    "#f11712",
-    "#34f9fe",
-    "#0443f0",
-    "#6cbcf7",
-    "#b6891c",
-    "#6cbcf7",
-    "#e90035s",
-    "#ea5656",
-    "#18598b",
-    "#0099f7",
-  ];
-  //   useEffect(() => {
-  //     if (currentUser) setReceiver(+currentUser);
-  //   }, [currentUser]);
 
   useEffect(() => {
     if (groupId && receiver) {
@@ -90,8 +52,6 @@ export default function GroupChat({ groupId }) {
       socket.disconnect();
     };
   }, [sender, receiver, messages, groupId]);
-  // console.log("messages", messages);
-  // console.log("groups", groups);
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -118,44 +78,17 @@ export default function GroupChat({ groupId }) {
         { sender, receiver, message: newMessage, image: selectedImage },
       ]);
       setNewMessage("");
+      setShowSelectedImage(false);
       setSelectedImage(null);
     } catch (error) {
       console.error(error);
     }
-    // try {
-    //   axios
-    //     .post(`${API_URL}/messages`, {
-    //       sender,
-    //       receiver,
-    //       message: newMessage,
-    //       GroupId: groupId,
-    //     })
-    //     .then((response) => console.log(response))
-    //     .catch((error) => console.error(error));
-
-    //   setMessages([...messages, { sender, receiver, message: newMessage }]);
-    //   setNewMessage("");
-    //   setSelectedImage(null);
-    // } catch (error) {
-    //   console.error(error);
-    // }
   };
 
   const handleImageChange = (e) => {
+    setShowSelectedImage(true);
     setSelectedImage(e.target.files[0]);
   };
-
-  // useEffect(() => {
-  //   const fatchdata = async () => {
-  //     await axios
-  //       .get(`${API_URL}/group/${groupId}`)
-  //       .then((res) => {
-  //         setMessages(res.data.messages);
-  //       })
-  //       .catch((error) => console.error(error));
-  //   };
-  //   fatchdata();
-  // }, [currentUser, groupId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -190,19 +123,6 @@ export default function GroupChat({ groupId }) {
     return formattedTime;
   };
 
-  const handleImageClick = (item) => {
-    const filteredImages = messages
-      .filter((i) => i.image && i.id !== item.id)
-      .map(({ image, message }) => ({
-        src: image,
-        ...(message ? { description: message } : {}),
-      }));
-    const clickedImage = item.message
-      ? { description: item.message, src: item.image }
-      : { src: item.image };
-    setOpen([clickedImage, ...filteredImages]);
-  };
-
   const handleDeleteMessage = async (id) => {
     await axios.delete(`${API_URL}/messages/${id}`);
   };
@@ -220,12 +140,6 @@ export default function GroupChat({ groupId }) {
     await axios.delete(`${API_URL}/${groupId}/${LocalData.id}`);
   };
 
-  const handleAddUser = () => {
-    if (dialogRef.current) {
-      dialogRef.current.handleClickOpen();
-    }
-  };
-
   const handleEmojiClick = (e) => {
     const emoji = e.emoji;
     const cursorPosition = inputRef.current.selectionStart;
@@ -236,7 +150,6 @@ export default function GroupChat({ groupId }) {
     const newCursorPosition = cursorPosition + emoji.length;
     inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
   };
-  // console.log(groups);
   return (
     <div>
       <div className="chat">
@@ -351,17 +264,14 @@ export default function GroupChat({ groupId }) {
                               />
                             ) : null}
                           </div>
-                          <div
-                            style={
-                              item.message === "message deleted"
-                                ? {
-                                    fontStyle: "italic",
-                                    color: "rgb(255,255,255,0.4)",
-                                  }
-                                : {}
-                            }
-                          >
-                            {item?.message}
+                          <div>
+                            {item.status === 3 ? (
+                              <div className="deleted-message">
+                                <AiOutlineStop /> You deleted this message
+                              </div>
+                            ) : (
+                              <div>{item?.message}</div>
+                            )}
                           </div>
                           {item?.status === 1 ? (
                             <div
@@ -434,17 +344,14 @@ export default function GroupChat({ groupId }) {
                               />
                             ) : null}
                           </div>
-                          <div
-                            style={
-                              item.status === 3
-                                ? {
-                                    fontStyle: "italic",
-                                    color: "rgb(255,255,255,0.4)",
-                                  }
-                                : {}
-                            }
-                          >
-                            {item?.message}
+                          <div>
+                            {item.status === 3 ? (
+                              <div className="deleted-message">
+                                <AiOutlineStop /> This message was deleted
+                              </div>
+                            ) : (
+                              <div>{item?.message}</div>
+                            )}
                           </div>
                           {item?.status === 1 ? (
                             <div
@@ -469,6 +376,37 @@ export default function GroupChat({ groupId }) {
                 )
               : "Start Chating"}
           </ul>
+        </div>
+        <div className="position-relative">
+          {showSelectedImage ? (
+            <div>
+              <div className="position-absolute selected-image ">
+                <Card
+                  sx={{ maxWidth: 300, bgcolor: "rgb(34,52,64),", p: 1 }}
+                  className="shadow "
+                >
+                  <div className="text-end">
+                    <IconButton
+                      aria-label="settings"
+                      sx={{ p: 0 }}
+                      onClick={() => {
+                        setSelectedImage(null);
+                        setShowSelectedImage(false);
+                      }}
+                    >
+                      <CloseIcon sx={{ color: "rgb(255, 255, 255, 0.3)" }} />
+                    </IconButton>
+                  </div>
+                  <CardMedia
+                    component="img"
+                    height="190"
+                    image={selectedImage && URL.createObjectURL(selectedImage)}
+                    alt="Paella dish"
+                  />
+                </Card>
+              </div>
+            </div>
+          ) : null}
         </div>
         <div className="chat-message clearfix ">
           <div className="">
@@ -495,20 +433,26 @@ export default function GroupChat({ groupId }) {
                       />
                     </div>
                   ) : null}
-                  <div className="">
-                    <a className="btn">
-                      <label htmlFor="image-input">
+
+                  <div id="headers-icons-group">
+                    <label htmlFor="image-input">
+                      <span className="wrap">
                         <RiImageAddFill className="ico" />
-                      </label>
-                    </a>
+                      </span>
+                    </label>
                   </div>
-                  <div className="d-flex align-items-center">
-                    <BsEmojiSmile
-                      className="ico"
-                      onClick={() =>
-                        setDisplayRangePicker(!displayDateRangePicker)
-                      }
-                    />
+                  <div
+                    className="d-flex align-items-center"
+                    id="headers-icons-group"
+                  >
+                    <span className="wrap">
+                      <BsEmojiSmile
+                        className="ico"
+                        onClick={() =>
+                          setDisplayRangePicker(!displayDateRangePicker)
+                        }
+                      />
+                    </span>
                   </div>
                   <div className="d-flex align-items-center">
                     <input

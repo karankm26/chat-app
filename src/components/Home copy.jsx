@@ -33,8 +33,6 @@ export default function Home() {
   const [groupId, setGroupId] = useState("");
   const ref = useRef(null);
   const [groups, setGroups] = useState([]);
-  const [userSearch, setUserSearch] = useState([]);
-  const [searchTerm, setSearchTerm] = useState([]);
   const handleClick = () => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -129,12 +127,8 @@ export default function Home() {
         console.error(error);
       }
     };
+
     fetchData();
-    return async () => {
-      await axios.put(`${API_URL}/user/${LocalData.id}`, {
-        online: false,
-      });
-    };
   }, [user]);
 
   const getLastMessage = (id) => {
@@ -143,13 +137,13 @@ export default function Home() {
   };
 
   const handleUserSearch = () => {
-    console.log(searchTerm);
-    const filtered = users.filter(
+    const filtered = currentSubAdmin.filter(
       (item) =>
-        item?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item?.group_name?.toLowerCase().includes(searchTerm.toLowerCase())
+        item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${item?.firstName} ${item?.lastName}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
     );
-    setUserSearch(filtered);
   };
 
   const handleAddUser = () => {
@@ -163,8 +157,7 @@ export default function Home() {
       groupDialogRef.current.handleClickOpen();
     }
   };
-  console.log(userSearch);
-
+  console.log(users);
   return (
     <>
       <div className="container-fluid">
@@ -227,33 +220,25 @@ export default function Home() {
                   <IoSearchOutline
                     className="search-ico"
                     style={{ cursor: "pointer" }}
-                    onClick={handleUserSearch}
                   />
                 </span>
                 <input
                   type="text"
                   className="form-control rounded-pill"
                   placeholder="Search..."
-                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <ul className="list-unstyled chat-list mt-2 mb-0">
-                {users.length ? (
-                  users.map((item, index) => (
+                {friends.length ? (
+                  friends.map((item, index) => (
                     <React.Fragment key={index}>
                       {!index && <hr className="m-0 p-0" />}
                       <li
                         className="clearfix d-flex"
                         onClick={() => {
-                          if (item?.group_name) {
-                            setGroupId(item.id);
-                            setSection("group");
-                            localStorage.setItem("currentUser", item.id + ",g");
-                          } else {
-                            setReceiver(item.id);
-                            setSection("single");
-                            localStorage.setItem("currentUser", item.id);
-                          }
+                          setReceiver(item.id);
+                          setSection("single");
+                          localStorage.setItem("currentUser", item.id);
                         }}
                       >
                         <div>
@@ -261,24 +246,15 @@ export default function Home() {
                             <img src={item?.image} alt="avatar" />
                           ) : (
                             <div>
-                              <InitialsAvatar
-                                name={item?.name ? item?.name : item.group_name}
-                              />
+                              <InitialsAvatar name={item?.name} />
                             </div>
                           )}
                         </div>
                         <div className="about">
-                          <div className="name">
-                            {item?.name ? item?.name : item?.group_name}
-                          </div>
+                          <div className="name">{item?.name}</div>
                           <div className="status">
-                            <i
-                              className={`fa fa-circle ${
-                                item.online ? "online" : "offline"
-                              }`}
-                            />
-                            {item.online ? "Online" : "Offline"}
-                            {/* {getLastMessage(item.id)} */}
+                            {/* <i className="fa fa-circle offline" /> */}
+                            {getLastMessage(item.id)}
                           </div>
                         </div>
                       </li>
@@ -288,6 +264,45 @@ export default function Home() {
                 ) : (
                   <li className="clearfix">No Chats Found</li>
                 )}
+                {groups.length
+                  ? groups.map(
+                      (item, index) =>
+                        (item.isMember || item.UserId === sender) && (
+                          <React.Fragment key={index}>
+                            {/* {!index && <hr className="m-0 p-0" />} */}
+                            <li
+                              className="clearfix"
+                              onClick={() => {
+                                setGroupId(item.id);
+                                setSection("group");
+                                localStorage.setItem(
+                                  "currentUser",
+                                  item.id + ",g"
+                                );
+                              }}
+                            >
+                              {" "}
+                              <img
+                                src={
+                                  item?.image
+                                    ? item.image
+                                    : "https://pngtree.com/free-png-vectors/group-icon"
+                                }
+                                alt="avatar"
+                              />
+                              <div className="about">
+                                <div className="name">{item?.group_name}</div>
+                                <div className="status">
+                                  {/* <i className="fa fa-circle offline" /> */}
+                                  {getLastMessage(item.id)}
+                                </div>
+                              </div>
+                            </li>
+                            <hr className="m-0 p-0" />
+                          </React.Fragment>
+                        )
+                    )
+                  : null}
               </ul>
             </div>
             <>
@@ -297,10 +312,10 @@ export default function Home() {
                 <GroupChat groupId={groupId} />
               ) : (
                 <div
-                  className="chat text-light text-center"
+                  className="chat text-light text-center top-50"
                   style={{ height: "100vh" }}
                 >
-                  <div className="align-items-center">Get Started</div>
+                  Get Started
                 </div>
               )}
             </>
