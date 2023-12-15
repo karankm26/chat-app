@@ -14,6 +14,8 @@ import SingleChat from "./SingleChat";
 import GroupChat from "./GroupChat";
 import InitialsAvatar from "react-initials-avatar";
 import "react-initials-avatar/lib/ReactInitialsAvatar.css";
+import { IoMdArrowBack } from "react-icons/io";
+import EditProfile from "./EditProfile";
 
 const socket = io(API_URL);
 export default function Home() {
@@ -35,6 +37,8 @@ export default function Home() {
   const [groups, setGroups] = useState([]);
   const [userSearch, setUserSearch] = useState([]);
   const [searchTerm, setSearchTerm] = useState([]);
+  const [editProfile, setEditProfile] = useState(false);
+  const [refresh, setRefresh] = useState(false);
   const handleClick = () => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -92,7 +96,7 @@ export default function Home() {
       };
       fatchdata();
     }
-  }, [LocalData.id]);
+  }, [LocalData.id, refresh]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -143,7 +147,6 @@ export default function Home() {
   };
 
   const handleUserSearch = () => {
-    console.log(searchTerm);
     const filtered = users.filter(
       (item) =>
         item?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -151,7 +154,7 @@ export default function Home() {
     );
     setUserSearch(filtered);
   };
-
+  console.log(userSearch);
   const handleAddUser = () => {
     if (dialogRef.current) {
       dialogRef.current.handleClickOpen();
@@ -170,126 +173,146 @@ export default function Home() {
       <div className="container-fluid">
         <div className="row clearfix ">
           {/* <div className="col-lg-12 m-0 p-0"> */}
-          <div className="card chat-app">
-            <div id="plist" className="people-list people-menu">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                  <img
-                    src={LocalData?.image}
-                    className="img-fluid rounded-circle"
-                    style={{ width: "50px" }}
-                  />
-                </div>
-                <div className="headers-icons-group" id="headers-icons-group">
-                  <span className="wrap">
-                    <MdGroups className="ico" onClick={handleAddGroup} />
-                  </span>
-                  <span className="wrap" onClick={handleAddUser}>
-                    <MdAddBox className="ico" />
-                  </span>
-                  <span className="wrap" data-bs-toggle="dropdown">
-                    <HiOutlineDotsVertical className="ico" />
-                  </span>
-                  <div
-                    className="dropdown"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <ul className="dropdown-menu">
-                      <li>
-                        <a
-                          className="dropdown-item align-items-center"
-                          href="#"
-                        >
-                          <AiOutlineUser className="ico me-1" />
-                          Profile
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          className="dropdown-item align-items-center"
-                          onClick={() => {
-                            localStorage.removeItem("user");
-                            navigate("/login");
-                          }}
-                        >
-                          <FiLogOut className="ico me-1" />
-                          Logout
-                        </a>
-                      </li>
-                    </ul>
+          <div className="card chat-app vh-100">
+            {editProfile ? (
+              <EditProfile setEditProfile={setEditProfile} user={user} />
+            ) : (
+              <div id="plist" className="people-list people-menu">
+                {/* Main */}
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <div className="d-flex align-items-center">
+                    <img
+                      src={user?.image}
+                      className="img-fluid rounded-circle"
+                      style={{ width: "50px" }}
+                    />
+                    <div className="ms-1">
+                      <p className="text-id-wrapper p-0 m-0">{user?.name}</p>
+                      <span className="text-id">
+                        Your Invite ID: {LocalData?.id}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="headers-icons-group" id="headers-icons-group">
+                    <span className="wrap">
+                      <MdGroups className="ico" onClick={handleAddGroup} />
+                    </span>
+                    <span className="wrap" onClick={handleAddUser}>
+                      <MdAddBox className="ico" />
+                    </span>
+                    <span className="wrap" data-bs-toggle="dropdown">
+                      <HiOutlineDotsVertical className="ico" />
+                    </span>
+                    <div
+                      className="dropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <ul className="dropdown-menu">
+                        <li onClick={() => setEditProfile(true)}>
+                          <a
+                            className="dropdown-item align-items-center"
+                            href="#"
+                          >
+                            <AiOutlineUser className="ico me-1" />
+                            Profile
+                          </a>
+                        </li>
+                        <li>
+                          <a
+                            className="dropdown-item align-items-center"
+                            onClick={() => {
+                              localStorage.removeItem("user");
+                              navigate("/login");
+                            }}
+                          >
+                            <FiLogOut className="ico me-1" />
+                            Logout
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="input-group">
-                <span className="search-ico-parent">
-                  <IoSearchOutline
-                    className="search-ico"
-                    style={{ cursor: "pointer" }}
+                <div className="input-group">
+                  <span
+                    className="search-ico-parent"
                     onClick={handleUserSearch}
+                  >
+                    <IoSearchOutline
+                      className="search-ico"
+                      style={{ cursor: "pointer" }}
+                    />
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control rounded-pill"
+                    placeholder="Search..."
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                </span>
-                <input
-                  type="text"
-                  className="form-control rounded-pill"
-                  placeholder="Search..."
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <ul className="list-unstyled chat-list mt-2 mb-0">
-                {users.length ? (
-                  users.map((item, index) => (
-                    <React.Fragment key={index}>
-                      {!index && <hr className="m-0 p-0" />}
-                      <li
-                        className="clearfix d-flex"
-                        onClick={() => {
-                          if (item?.group_name) {
-                            setGroupId(item.id);
-                            setSection("group");
-                            localStorage.setItem("currentUser", item.id + ",g");
-                          } else {
-                            setReceiver(item.id);
-                            setSection("single");
-                            localStorage.setItem("currentUser", item.id);
-                          }
-                        }}
-                      >
-                        <div>
-                          {item?.image ? (
-                            <img src={item?.image} alt="avatar" />
-                          ) : (
+                </div>
+                <ul className="list-unstyled chat-list mt-2 mb-0">
+                  {(userSearch.length ? userSearch.length : users.length) ? (
+                    (userSearch.length ? userSearch : users).map(
+                      (item, index) => (
+                        <React.Fragment key={index}>
+                          {!index && <hr className="m-0 p-0" />}
+                          <li
+                            className="clearfix d-flex"
+                            onClick={() => {
+                              if (item?.group_name) {
+                                setGroupId(item.id);
+                                setSection("group");
+                                localStorage.setItem(
+                                  "currentUser",
+                                  item.id + ",g"
+                                );
+                              } else {
+                                setReceiver(item.id);
+                                setSection("single");
+                                localStorage.setItem("currentUser", item.id);
+                              }
+                            }}
+                          >
                             <div>
-                              <InitialsAvatar
-                                name={item?.name ? item?.name : item.group_name}
-                              />
+                              {item?.image ? (
+                                <img src={item?.image} alt="avatar" />
+                              ) : (
+                                <div>
+                                  <InitialsAvatar
+                                    name={
+                                      item?.name ? item?.name : item.group_name
+                                    }
+                                  />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                        <div className="about">
-                          <div className="name">
-                            {item?.name ? item?.name : item?.group_name}
-                          </div>
-                          <div className="status">
-                            <i
-                              className={`fa fa-circle ${
-                                item.online ? "online" : "offline"
-                              }`}
-                            />
-                            {item.online ? "Online" : "Offline"}
-                            {/* {getLastMessage(item.id)} */}
-                          </div>
-                        </div>
-                      </li>
-                      <hr className="m-0 p-0" />
-                    </React.Fragment>
-                  ))
-                ) : (
-                  <li className="clearfix">No Chats Found</li>
-                )}
-              </ul>
-            </div>
+                            <div className="about">
+                              <div className="name">
+                                {item?.name ? item?.name : item?.group_name}
+                              </div>
+                              <div className="status">
+                                <i
+                                  className={`fa fa-circle ${
+                                    item.online ? "online" : "offline"
+                                  }`}
+                                />
+                                {item.online ? "Online" : "Offline"}
+                                {/* {getLastMessage(item.id)} */}
+                              </div>
+                            </div>
+                          </li>
+                          <hr className="m-0 p-0" />
+                        </React.Fragment>
+                      )
+                    )
+                  ) : (
+                    <li className="clearfix">No Chats Found</li>
+                  )}
+                </ul>
+              </div>
+            )}
             <>
               {section === "single" ? (
                 <SingleChat receiver={receiver} />
@@ -310,7 +333,11 @@ export default function Home() {
 
       <>
         {/* MUI Dialog */}
-        <MuiDailog ref={dialogRef} setReceiver={setReceiver} />
+        <MuiDailog
+          ref={dialogRef}
+          setReceiver={setReceiver}
+          setRefresh={setRefresh}
+        />
         <GroupDailog
           ref={groupDialogRef}
           setReceiver={setReceiver}

@@ -15,6 +15,7 @@ import { Avatar, Card, CardMedia, IconButton } from "@mui/material";
 import ImageLightbox from "../utils/ImageLightbox";
 import InitialsAvatar from "react-initials-avatar";
 import "react-initials-avatar/lib/ReactInitialsAvatar.css";
+import ScrollToBottom from "react-scroll-to-bottom";
 const socket = io(API_URL);
 
 export default function GroupChat({ groupId }) {
@@ -196,8 +197,9 @@ export default function GroupChat({ groupId }) {
             </div>
           </div>
         </div>
-        <div className="chat-history" id="style-2">
-          <ul className="m-b-0">
+        {/* <div className="chat-history" id="style-2"> */}
+        <ScrollToBottom className="chat-history" mode="bottom">
+        <ul className="m-b-0 px-2 pt-3">
             {messages.length
               ? messages.map((item) =>
                   +item.sender === sender ? (
@@ -376,7 +378,8 @@ export default function GroupChat({ groupId }) {
                 )
               : "Start Chating"}
           </ul>
-        </div>
+        </ScrollToBottom>
+        {/* </div> */}
         <div className="position-relative">
           {showSelectedImage ? (
             <div>

@@ -14,6 +14,7 @@ import InitialsAvatar from "react-initials-avatar";
 import "react-initials-avatar/lib/ReactInitialsAvatar.css";
 import { Card, CardMedia, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import ScrollToBottom from "react-scroll-to-bottom";
 
 const socket = io(API_URL);
 
@@ -145,13 +146,18 @@ export default function SingleChat({ receiver }) {
     const newCursorPosition = cursorPosition + emoji.length;
     inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
   };
+  const scrollId = useRef(null);
+
+  useEffect(() => {
+    if (scrollId.current) {
+      console.log(scrollId.current);
+    }
+  }, [scrollId]);
+
 
   return (
     <div>
-      <div
-        className="chat"
-        style={receiver ? { display: "block" } : { display: "none" }}
-      >
+      <div className="chat">
         <div className="chat-header clearfix position-relative">
           <div className=" d-flex justify-content-between align-items-center">
             <div className="d-flex">
@@ -205,8 +211,8 @@ export default function SingleChat({ receiver }) {
             </div>
           </div>
         </div>
-        <div className="chat-history" id="style-2">
-          <ul className="m-b-0">
+        <ScrollToBottom className="chat-history" mode="bottom">
+          <ul className="m-b-0 px-2 pt-3">
             {messages.length
               ? messages.map((item, index) =>
                   +item.sender === sender ? (
@@ -360,7 +366,7 @@ export default function SingleChat({ receiver }) {
                 )
               : "Start Chating"}
           </ul>
-        </div>
+        </ScrollToBottom>
         <div className="position-relative">
           {showSelectedImage ? (
             <div>

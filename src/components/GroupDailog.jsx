@@ -120,7 +120,11 @@ const GroupDailog = forwardRef(({ setReceiver, user }, ref) => {
 
   return (
     <>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        // sx={{ backgroundColor: "#223440 " }}
+      >
         <DialogTitle>Make Group</DialogTitle>
         <DialogContent>
           <DialogContentText className="content">
@@ -128,15 +132,11 @@ const GroupDailog = forwardRef(({ setReceiver, user }, ref) => {
             below.
           </DialogContentText>
           <Typography className="d-flex justify-content-center mt-3">
-            <FormLabel htmlFor="image">
+            <FormLabel htmlFor="image" className="avatar-label">
               <Avatar
                 html
                 alt="Group icon"
-                src={
-                  text.image
-                    ? URL.createObjectURL(text.image[0])
-                    : "/static/images/avatar/1.jpg"
-                }
+                src={text.image ? URL.createObjectURL(text.image[0]) : ""}
                 sx={{ width: 80, height: 80 }}
               />
               <span style={{ color: "rgb(255, 255, 255, 0.7)" }}>

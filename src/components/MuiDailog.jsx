@@ -8,8 +8,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
+import toast from "react-hot-toast";
 
-const MuiDailog = forwardRef(({ setReceiver }, ref) => {
+const MuiDailog = forwardRef(({ setReceiver, setRefresh }, ref) => {
   const localStorageData = localStorage.getItem("user");
   const LocalData = localStorageData ? JSON.parse(localStorageData) : null;
   const id = LocalData?.id;
@@ -53,18 +54,33 @@ const MuiDailog = forwardRef(({ setReceiver }, ref) => {
   const handleSubmit = async () => {
     let arr = user.friends;
     arr.push(text);
-    setReceiver(text);
-    const res = await axios.put(`${API_URL}/user/${id}`, {
-      friends: arr.toString(),
-    });
-    if (res) {
-      handleClose();
-    }
+    // setReceiver(text);
+    const res = await axios
+      .put(`${API_URL}/user/${id}`, {
+        friends: arr.toString(),
+      })
+      .then((response) => {
+        setRefresh(true);
+        handleClose();
+        toast.success("Friend Added", {
+          duration: 4000,
+        });
+      })
+      .catch((err) => {
+        toast.error(err.response.data.error, {
+          duration: 4000,
+        });
+        handleClose();
+      });
   };
 
   return (
     <>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        // sx={{ backgroundColor: "#223440 " }}
+      >
         <DialogTitle>Invite You Friend</DialogTitle>
         <DialogContent>
           <DialogContentText className="content">
