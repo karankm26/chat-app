@@ -95,13 +95,17 @@ export default function GroupMessage({ groupId, groupData }) {
                   <div className="chat-msg-text position-relative">
                     <span
                       className="position-absolute"
-                      style={{ fontSize: "12px", top: 3 }}
+                      style={{
+                        fontSize: "11px",
+                        top: 3,
+                        // color: item?.sender_Details?.color,
+                      }}
                     >
-                      ~ {item?.sender_Details?.name}
+                      ~ {item?.sender_Details?.name?.split(" ")[0]}
                     </span>
                     <div className="mt-2">
                       {item?.image ? <img src={item?.image} alt /> : null}
-                      <br />
+                      {/* <br /> */}
                       {item?.message}
                     </div>
                   </div>
