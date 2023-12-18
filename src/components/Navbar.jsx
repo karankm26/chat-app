@@ -1,14 +1,25 @@
 import { Avatar } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+// import { updateUser } from "../features/apiSlice";
+import { useDispatch } from "react-redux";
 
 export default function Navbar({ user }) {
+  // const dispatch = useDispatch();
   const [mode, setMode] = useState(false);
+  const modeType = localStorage.getItem("mode");
+
+  useEffect(() => {
+    if (modeType === "true") {
+      handleModeChange(true);
+    }
+  }, [modeType]);
 
   const handleModeChange = (item) => {
     const body = document.body;
     item ? body.classList.add("dark-mode") : body.classList.remove("dark-mode");
+    localStorage.setItem("mode", item);
+    // dispatch(updateUser({}));
   };
-  
 
   return (
     <div className="header">

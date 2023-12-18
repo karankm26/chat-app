@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import PersonalMessage from "./PersonalMessage";
 import GroupMessage from "./GroupMessage";
 
-export default function Chat({ receiver, groupId, friends, groups }) {
+export default function Chat({ receiver, groupId, friends, groups, user }) {
   const [receiverData, setReceiverData] = useState({});
   const [groupData, setGroupData] = useState({});
 
@@ -23,7 +23,11 @@ export default function Chat({ receiver, groupId, friends, groups }) {
   return (
     <div className="chat-area">
       {receiver ? (
-        <PersonalMessage receiver={receiver} receiverData={receiverData} />
+        <PersonalMessage
+          receiver={receiver}
+          receiverData={receiverData}
+          user={user}
+        />
       ) : groupId ? (
         <GroupMessage groupId={groupId} groupData={groupData} />
       ) : (

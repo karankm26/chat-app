@@ -88,6 +88,7 @@ export default function Home() {
             receiver={receiver}
             friends={friends}
             groups={groups}
+            user={user}
           />
           <UserDetails />
         </div>

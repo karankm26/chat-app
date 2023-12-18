@@ -1,25 +1,41 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMessages } from "../features/apiSlice";
 import { io } from "socket.io-client";
 import { Avatar } from "@mui/material";
 import axios from "axios";
 import ScrollToBottom from "react-scroll-to-bottom";
+import ImageContainer from "./ImageContainer";
+import ImageLightbox from "./ImageLightbox";
+import { useDropzone } from "react-dropzone";
+import { IoSend } from "react-icons/io5";
+import { messagePostApi } from "../api";
+import { IoIosArrowDown } from "react-icons/io";
+
 const socket = io(import.meta.env.VITE_API_URL);
 
-export default function PersonalMessage({ receiver, receiverData }) {
+export default function PersonalMessage({ receiver, receiverData, user }) {
   const dispatch = useDispatch();
-  const { messages: messagesData } = useSelector((state) => state.api);
+  const inputRef = useRef(null);
+  const imageLightBoxRef = useRef(null);
   const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageDropped, setImageDropped] = useState(null);
+  const [editMessageId, setEditMessageId] = useState(null);
+
+  const onDrop = useCallback((acceptedFiles) => {
+    setSelectedImage(acceptedFiles);
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+  });
+
   const sender = 2;
 
   useEffect(() => {
     if (sender && receiver) {
       socket.emit("join", { sender, receiver });
-      // dispatch(fetchMessages({ sender, receiver }));
-      // if (messagesData) {
-      //   setMessages(messagesData);
-      // }
       axios
         .get(`${import.meta.env.VITE_API_URL}/messages/${sender}/${receiver}`)
         .then((response) => setMessages(response.data))
@@ -34,8 +50,6 @@ export default function PersonalMessage({ receiver, receiverData }) {
     };
   }, [sender, receiver, messages]);
 
-  // console.log(messages);
-
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     const formattedTime = date.toLocaleTimeString([], {
@@ -46,31 +60,72 @@ export default function PersonalMessage({ receiver, receiverData }) {
     return formattedTime;
   };
 
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    const findMessage =
+      messages.length && messages.find((item) => item.id === editMessageId);
+    if (findMessage) {
+      await axios.put(`${API_URL}/messages/${editMessageId}`, {
+        message: newMessage,
+      });
+      setEditMessageId(null);
+      setNewMessage("");
+    } else {
+      const formData = new FormData();
+      formData.append("sender", sender);
+      formData.append("receiver", receiver);
+      formData.append("message", newMessage.trim());
+
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+      socket.emit("message", {
+        sender,
+        receiver,
+        message: newMessage,
+        image: selectedImage,
+      });
+
+      try {
+        await messagePostApi(formData);
+        // await axios.post(`${API_URL}/messages`, formData);
+        setMessages([
+          ...messages,
+          { sender, receiver, message: newMessage, image: selectedImage },
+        ]);
+        setNewMessage("");
+        // setShowSelectedImage(false);
+        setSelectedImage(null);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+  const handeSelectImage = () => {
+    setSelectedImage(e.target.files[0]);
+  };
+
   return (
-    <div className="">
-      {/* <div className="chat-area-header">
-        <div className="chat-area-title">CodePen Group</div>
-        <div className="chat-area-group">
-          <img
-            className="chat-area-profile"
-            src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3364143/download+%283%29+%281%29.png"
-            alt
+    <div className="position-relative h-100">
+      {(isDragActive || selectedImage || imageDropped) && (
+        <div>
+          <ImageContainer
+            getRootProps={getRootProps}
+            getInputProps={getInputProps}
+            isDragActive={isDragActive}
+            selectedImage={selectedImage}
+            setSelectedImage={setSelectedImage}
+            setImageDropped={setImageDropped}
           />
-          <img
-            className="chat-area-profile"
-            src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3364143/download+%282%29.png"
-            alt
-          />
-          <img
-            className="chat-area-profile"
-            src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3364143/download+%2812%29.png"
-            alt
-          />
-          <span>+4</span>
         </div>
-      </div> */}{" "}
+      )}
+
       {/* <ScrollToBottom mode="bottom" className="chat-area-main"> */}
-      <div className="chat-area-main">
+      <div
+        className="chat-area-main"
+        {...getRootProps()}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* <ScrollToBottom mode="bottom"> */}
         {messages.length
           ? messages.map((item, index) => (
@@ -82,28 +137,48 @@ export default function PersonalMessage({ receiver, receiverData }) {
                   <Avatar
                     html
                     alt="Group icon"
-                    src={receiverData?.image}
+                    src={
+                      +item.sender === sender
+                        ? user?.image
+                        : receiverData?.image
+                    }
                     className="chat-msg-img"
+                    sx={{ width: 30, height: 30 }}
                   />
-                  {/* <img
-                    className="chat-msg-img"
-                    src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3364143/download+%283%29+%281%29.png"
-                    alt
-                  /> */}
+
                   <div className="chat-msg-date">
                     {formatTimestamp(item?.timestamp)}
                   </div>
                 </div>
                 <div className="chat-msg-content">
-                  <div className="chat-msg-text">{item?.message}</div>
+                  <IoIosArrowDown
+                    className="position-absolute mt-1"
+                    style={{ right: "65px" }}
+                  />
+                  <div className="chat-msg-text">
+                    {item?.image ? (
+                      <img
+                        src={item?.image}
+                        alt
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          if (imageLightBoxRef.current) {
+                            imageLightBoxRef.current.handleImageClick(item);
+                          }
+                        }}
+                      />
+                    ) : null}
+                    {item?.message}
+                  </div>
                 </div>
               </div>
             ))
           : ""}
         {/* </ScrollToBottom> */}
       </div>
-      <div className="chat-area-footer">
-        <svg
+      <input type="file" hidden onChange={handeSelectImage} />
+      <form className="chat-area-footer" onSubmit={sendMessage}>
+        {/* <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -115,8 +190,9 @@ export default function PersonalMessage({ receiver, receiverData }) {
         >
           <path d="M23 7l-7 5 7 5V7z" />
           <rect x={1} y={5} width={15} height={14} rx={2} ry={2} />
-        </svg>
+        </svg> */}
         <svg
+          onClick={() => setImageDropped(true)}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -138,50 +214,25 @@ export default function PersonalMessage({ receiver, receiverData }) {
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="feather feather-plus-circle"
-        >
-          <circle cx={12} cy={12} r={10} />
-          <path d="M12 8v8M8 12h8" />
-        </svg>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="feather feather-paperclip"
-        >
-          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
-        </svg>
-        <input type="text" placeholder="Type something here..." />
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
           className="feather feather-smile"
         >
           <circle cx={12} cy={12} r={10} />
           <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" />
         </svg>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="feather feather-thumbs-up"
-        >
-          <path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" />
-        </svg>
-      </div>
+
+        <input
+          type="text"
+          placeholder="Type something here..."
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          ref={inputRef}
+        />
+
+        <button className="btn m-0 p-0">
+          <IoSend type="submit" />
+        </button>
+      </form>
+      <ImageLightbox messages={messages} ref={imageLightBoxRef} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
 import { Avatar } from "@mui/material";
 
 export default function UserList({ users, setGroupId, setReceiver }) {
+  const currentUser = localStorage.getItem("currentUser");
   return (
     <div className="conversation-area">
       {/* msg active , msg online   */}
@@ -9,7 +9,11 @@ export default function UserList({ users, setGroupId, setReceiver }) {
         users.map((item, index) => (
           <div
             key={index}
-            className="msg online"
+            className={`msg online ${
+              currentUser === item.id + ",g" || +currentUser === item.id
+                ? "msg active"
+                : null
+            }`}
             onClick={() => {
               if (item?.group_name) {
                 setGroupId(item.id);
@@ -26,7 +30,7 @@ export default function UserList({ users, setGroupId, setReceiver }) {
               html
               alt="Group icon"
               src={item?.image ? item?.image : ""}
-              // sx={{ width: 120, height: 120 }}
+              sx={{ width: 44, height: 44 }}
               className="msg-profile"
             />
             <div className="msg-detail">

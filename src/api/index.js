@@ -39,7 +39,7 @@ const userApi = async (id) => {
 
 const userUpdateApi = async (data) => {
   const response = await axios
-    .put(`${apiUrl}/user/${data.id}`)
+    .put(`${apiUrl}/user/${data.id}`, data.body)
     .then((res) => {
       return res.data;
     })

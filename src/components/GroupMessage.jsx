@@ -37,8 +37,6 @@ export default function GroupMessage({ groupId, groupData }) {
       setGroupReceiver(groupData?.members?.[0]);
     }
   }, [groupData]);
-  // console.log(groupData);
-  console.log(messages);
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);

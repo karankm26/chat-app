@@ -3,9 +3,11 @@ import {
   groupApi,
   loginApi,
   messageApi,
+  messagePostApi,
   registerApi,
   userAllApi,
   userApi,
+  userUpdateApi,
 } from "../api";
 
 export const login = createAsyncThunk("api/login", async (body, thunkAPI) => {
@@ -65,6 +67,18 @@ export const fetchUser = createAsyncThunk(
   }
 );
 
+export const updateUser = createAsyncThunk(
+  "api/updateUser",
+  async (data, thunkAPI) => {
+    try {
+      const response = await userUpdateApi(data);
+      return response;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const fetchMessages = createAsyncThunk(
   "api/fetchMessages",
   async (data, thunkAPI) => {
@@ -99,6 +113,11 @@ const apiSlice = createSlice({
     userLoading: false,
     userError: null,
     userSuccess: null,
+
+    updateUser: {},
+    updateUserLoading: false,
+    updateUserError: null,
+    updateUserSuccess: null,
 
     group: [],
     groupLoading: false,
@@ -181,6 +200,20 @@ const apiSlice = createSlice({
       .addCase(fetchUser.rejected, (state, action) => {
         state.userLoading = false;
         state.userError = action.error.message;
+      });
+
+    builder
+      .addCase(updateUser.pending, (state) => {
+        state.updateUserLoading = true;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.updateUserLoading = false;
+        state.updateUser = action.payload;
+        state.updateUserSuccess = true;
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.updateUserLoading = false;
+        state.updateUserError = action.error.message;
       });
 
     builder

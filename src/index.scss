@@ -3,6 +3,8 @@
 :root {
   --body-bg-color: #e5ecef;
   --theme-bg-color: #fff;
+  --theme-bg-image: rgb(255, 255, 255, 0.9);
+  --bg-image: url(assets/bg-image-light.jpg);
   --settings-icon-hover: #9fa7ac;
   --developer-color: #f9fafb;
   --input-bg: #f8f8fa;
@@ -59,6 +61,8 @@
 .dark-mode {
   --body-bg-color: #1d1d1d;
   --theme-bg-color: #27292d;
+  --theme-bg-image: rgb(39, 41, 45, 0.9);
+  --bg-image: url(assets/bg-image-dark.png);
   --border-color: #323336;
   --body-color: #d1d1d2;
   --active-conversation-bg: linear-gradient(
@@ -366,6 +370,13 @@ html {
 }
 
 .chat-area {
+  background: linear-gradient(
+      1deg,
+      var(--theme-bg-image),
+      var(--theme-bg-image)
+    ),
+    var(--bg-image);
+  background-position: center;
   display: flex;
   flex-direction: column;
   overflow: auto;
@@ -781,5 +792,46 @@ html {
     input {
       padding-right: 10px;
     }
+  }
+}
+
+// Custome
+
+.btn-select-image {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  text-align: center;
+  background: var(--theme-bg-color);
+  border: 1px dashed var(--input-chat-color);
+  border-radius: 3px;
+  height: 88%;
+  cursor: pointer;
+  .ico {
+    color: #9197a7;
+    font-size: 80px;
+  }
+  p {
+    color: #9197a7;
+  }
+  button {
+    background-color: #e4e5e7;
+  }
+  .close-ico {
+    font-size: 26px;
+    margin: 9px;
+    color: var(--input-chat-color);
+  }
+  .selected-image {
+    width: 377px;
+    height: 264px;
+    object-fit: contain;
+    padding: 15px;
+  }
+  .content {
+    margin: 6rem;
   }
 }
