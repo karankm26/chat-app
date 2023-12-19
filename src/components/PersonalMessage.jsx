@@ -11,6 +11,8 @@ import { useDropzone } from "react-dropzone";
 import { IoSend } from "react-icons/io5";
 import { messagePostApi } from "../api";
 import { IoIosArrowDown } from "react-icons/io";
+import { stylesDate } from "../utils/toggleStyle";
+import EmojiPicker from "emoji-picker-react";
 
 const socket = io(import.meta.env.VITE_API_URL);
 
@@ -23,6 +25,7 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageDropped, setImageDropped] = useState(null);
   const [editMessageId, setEditMessageId] = useState(null);
+  const [emojiPicker, setEmojiPicker] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
     setSelectedImage(acceptedFiles);
@@ -77,36 +80,52 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
       formData.append("message", newMessage.trim());
 
       if (selectedImage) {
-        formData.append("image", selectedImage);
+        formData.append("image", selectedImage[0]);
       }
       socket.emit("message", {
         sender,
         receiver,
         message: newMessage,
-        image: selectedImage,
+        ...(selectedImage ? { image: selectedImage[0] } : {}),
       });
 
       try {
         await messagePostApi(formData);
-        // await axios.post(`${API_URL}/messages`, formData);
         setMessages([
           ...messages,
-          { sender, receiver, message: newMessage, image: selectedImage },
+          {
+            sender,
+            receiver,
+            message: newMessage,
+            ...(selectedImage ? { image: selectedImage[0] } : {}),
+          },
         ]);
         setNewMessage("");
-        // setShowSelectedImage(false);
+        setImageDropped(false);
         setSelectedImage(null);
-      } catch (error) {
-        console.error(error);
-      }
+      } catch (error) {}
     }
   };
   const handeSelectImage = () => {
     setSelectedImage(e.target.files[0]);
   };
 
+  const handleEmojiClick = (e) => {
+    const emoji = e.emoji;
+    const cursorPosition = inputRef.current.selectionStart;
+    const beforeCursor = newMessage.slice(0, cursorPosition);
+    const afterCursor = newMessage.slice(cursorPosition);
+    const updatedMessage = beforeCursor + emoji + afterCursor;
+    setNewMessage(updatedMessage);
+    const newCursorPosition = cursorPosition + emoji.length;
+    inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
+  };
+
   return (
-    <div className="position-relative h-100">
+    <div
+      className="position-relative h-100"
+      style={imageDropped ? { overflow: "hidden" } : {}}
+    >
       {(isDragActive || selectedImage || imageDropped) && (
         <div>
           <ImageContainer
@@ -151,15 +170,25 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
                   </div>
                 </div>
                 <div className="chat-msg-content">
-                  <IoIosArrowDown
-                    className="position-absolute mt-1"
-                    style={{ right: "65px" }}
-                  />
+                  {+item.sender === sender && (
+                    <IoIosArrowDown
+                      className="position-absolute ico"
+                      style={{ right: "10px", top: "3px" }}
+                    />
+                  )}
+                  {/* <div className="chat-menu">
+                    <ul className="px-4 py-1 m-0">
+                      <li>Edit</li>
+                      <li>Delete</li>
+                    </ul>
+                  </div> */}
+
                   <div className="chat-msg-text">
                     {item?.image ? (
                       <img
                         src={item?.image}
                         alt
+                        className="rounded"
                         style={{ cursor: "pointer" }}
                         onClick={() => {
                           if (imageLightBoxRef.current) {
@@ -177,22 +206,24 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
         {/* </ScrollToBottom> */}
       </div>
       <input type="file" hidden onChange={handeSelectImage} />
-      <form className="chat-area-footer" onSubmit={sendMessage}>
-        {/* <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="feather feather-video"
-        >
-          <path d="M23 7l-7 5 7 5V7z" />
-          <rect x={1} y={5} width={15} height={14} rx={2} ry={2} />
-        </svg> */}
+
+      <form
+        className="chat-area-footer"
+        onSubmit={sendMessage}
+        style={messages.length ? {} : { position: "absolute" }}
+      >
+        {emojiPicker ? (
+          <div style={stylesDate.popover}>
+            <div
+              style={stylesDate.cover}
+              onClick={() => setEmojiPicker(false)}
+            />
+
+            <EmojiPicker theme="dark" onEmojiClick={handleEmojiClick} />
+          </div>
+        ) : null}
         <svg
-          onClick={() => setImageDropped(true)}
+          onClick={() => setImageDropped(!imageDropped)}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -206,7 +237,9 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
           <circle cx="8.5" cy="8.5" r="1.5" />
           <path d="M21 15l-5-5L5 21" />
         </svg>
+
         <svg
+          onClick={() => setEmojiPicker(!emojiPicker)}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -228,7 +261,10 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
           ref={inputRef}
         />
 
-        <button className="btn m-0 p-0">
+        <button
+          className="btn m-0 p-0 border-0"
+          disabled={!selectedImage && !newMessage.trim()}
+        >
           <IoSend type="submit" />
         </button>
       </form>

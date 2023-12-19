@@ -463,6 +463,7 @@ html {
     margin-left: 0;
     margin-right: 12px;
     align-items: flex-end;
+    position: relative;
   }
   .chat-msg-text {
     background-color: var(--theme-color);
@@ -473,6 +474,32 @@ html {
     left: auto;
     right: calc(100% + 12px);
   }
+  .ico {
+    visibility: hidden;
+  }
+
+  .chat-msg-content:hover {
+    .ico {
+      visibility: visible;
+      cursor: pointer;
+    }
+  }
+
+  // .chat-menu {
+  //   position: absolute;
+  //   border-radius: 12px;
+  //   background-color: var(--theme-bg-color);
+  //   border: 1px solid;
+  //   right: 0px;
+  //   top: 15px;
+  //   ul {
+  //     li {
+  //       list-style: none;
+  //       list-style-type: none;
+  //       cursor: ;
+  //     }
+  //   }
+  // }
 }
 
 .chat-msg-text img {
@@ -803,7 +830,6 @@ html {
   left: 0;
   z-index: 1;
   display: block;
-  overflow: hidden;
   text-align: center;
   background: var(--theme-bg-color);
   border: 1px dashed var(--input-chat-color);
@@ -826,7 +852,7 @@ html {
     color: var(--input-chat-color);
   }
   .selected-image {
-    width: 377px;
+    // width: 377px;
     height: 264px;
     object-fit: contain;
     padding: 15px;
@@ -835,3 +861,32 @@ html {
     margin: 6rem;
   }
 }
+
+.EmojiPickerReact {
+  background-color: var(--theme-bg-color) !important;
+  border-color: var(--border-color) !important;
+
+  input {
+    background-color: var(--theme-bg-color) !important;
+    border-color: var(--border-color) !important;
+  }
+  .epr-emoji-category-label {
+    background-color: var(--theme-bg-color) !important;
+  }
+  .epr-preview {
+    border-color: var(--border-color) !important;
+  }
+}
+// .dropdown {
+//   .dropdown-menu {
+//     background: var(--theme-bg-color) !important;
+//     visibility: visible;
+//     .dropdown-item {
+//       background: var(--theme-bg-color) !important;
+//       color: var(--body-color) !important;
+//     }
+//     .dropdown-item:hover {
+//       background: var(--input-chat-color) !important;
+//     }
+//   }
+// }

@@ -5,14 +5,14 @@ import { io } from "socket.io-client";
 import { Avatar } from "@mui/material";
 import axios from "axios";
 import ScrollToBottom from "react-scroll-to-bottom";
+import { formatDateTime } from "../utils/timeFormat";
 
 const socket = io(import.meta.env.VITE_API_URL);
-export default function GroupMessage({ groupId, groupData }) {
-  const dispatch = useDispatch();
-  const { messages: messagesData } = useSelector((state) => state.api);
+export default function GroupMessage({ groupId, groupData, groups }) {
   const [messages, setMessages] = useState([]);
   const [groupReceiver, setGroupReceiver] = useState("");
   const sender = 2;
+
   // const receiver = groupReceiver;
 
   useEffect(() => {
@@ -47,9 +47,11 @@ export default function GroupMessage({ groupId, groupData }) {
 
     return formattedTime;
   };
+  // const groupsdata = groups.slice(0, 3);
+  // console.log(groupsdata)
   return (
-    <div>
-      <div className="chat-area-header">
+    <div className="position-relative h-100">
+      {/* <div className="chat-area-header">
         <div className="chat-area-title">CodePen Group</div>
         <div className="chat-area-group">
           <img
@@ -69,14 +71,15 @@ export default function GroupMessage({ groupId, groupData }) {
           />
           <span>+4</span>
         </div>
-      </div>
-      <div className="chat-area-main">
+      </div> */}
+      <div className="chat-area-main mt-2">
         {messages.length
           ? messages.map((item, index) => (
               <div
                 className={`chat-msg ${+item.sender === sender && "owner"}`}
                 key={index}
               >
+                <div className="">{formatDateTime(item?.timestamp)}</div>
                 <div className="chat-msg-profile">
                   <Avatar
                     html
@@ -96,15 +99,16 @@ export default function GroupMessage({ groupId, groupData }) {
                       style={{
                         fontSize: "11px",
                         top: 3,
-                        // color: item?.sender_Details?.color,
+                        ...(+item.sender === sender
+                          ? {}
+                          : { color: item?.sender_Details?.color }),
                       }}
                     >
                       ~ {item?.sender_Details?.name?.split(" ")[0]}
                     </span>
                     <div className="mt-2">
                       {item?.image ? <img src={item?.image} alt /> : null}
-                      {/* <br /> */}
-                      {item?.message}
+                      <div>{item?.message}</div>
                     </div>
                   </div>
                 </div>
@@ -112,7 +116,10 @@ export default function GroupMessage({ groupId, groupData }) {
             ))
           : ""}
       </div>
-      <div className="chat-area-footer">
+      <div
+        className="chat-area-footer"
+        style={messages.length ? {} : { position: "absolute" }}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"

@@ -82,6 +82,8 @@ export default function Home() {
             users={users}
             setGroupId={setGroupId}
             setReceiver={setReceiver}
+            sender={sender}
+            receiver={receiver}
           />
           <Chat
             groupId={groupId}
@@ -90,7 +92,12 @@ export default function Home() {
             groups={groups}
             user={user}
           />
-          <UserDetails />
+          <UserDetails
+            groupId={groupId}
+            groups={groups}
+            friends={friends}
+            receiver={receiver}
+          />
         </div>
       </div>
     </div>

@@ -29,7 +29,7 @@ export default function Chat({ receiver, groupId, friends, groups, user }) {
           user={user}
         />
       ) : groupId ? (
-        <GroupMessage groupId={groupId} groupData={groupData} />
+        <GroupMessage groupId={groupId} groupData={groupData} groups={groups} />
       ) : (
         <div>Get Started</div>
       )}

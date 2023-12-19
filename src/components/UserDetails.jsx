@@ -1,26 +1,46 @@
-import React from "react";
+import { Avatar } from "@mui/material";
+import moment from "moment";
+import React, { useEffect, useState } from "react";
 
-export default function UserDetails() {
+export default function UserDetails({ groups, groupId, friends, receiver }) {
+  const [receiverData, setReceiverData] = useState({});
+  const [groupData, setGroupData] = useState({});
+
+  useEffect(() => {
+    if (receiver && friends) {
+      const filterReceiver = friends.find((item) => item.id === receiver);
+      setReceiverData(filterReceiver);
+    }
+  }, [friends, receiver]);
+
+  useEffect(() => {
+    if (groupId && groups) {
+      const filterReceiver = groups.find((item) => item.id === groupId);
+      setGroupData(filterReceiver);
+    }
+  }, [groups, groupId]);
+
   return (
     <div className="detail-area">
       <div className="detail-area-header">
         <div className="msg-profile group">
-          <svg
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="css-i6dzq1"
-          >
-            <path d="M12 2l10 6.5v7L12 22 2 15.5v-7L12 2zM12 22v-6.5" />
-            <path d="M22 8.5l-10 7-10-7" />
-            <path d="M2 15.5l10-7 10 7M12 2v6.5" />
-          </svg>
+          {/* <img src={groupId ? groupData?.image : receiverData?.image} /> */}
+          <Avatar
+            sx={{ width: 66, height: 66 }}
+            src={groupId ? groupData?.image : receiverData?.image}
+          />
         </div>
-        <div className="detail-title">CodePen Group</div>
-        <div className="detail-subtitle">Created by Aysenur, 1 May 2020</div>
+        <div className="detail-title">
+          {groupId ? groupData?.group_name : receiverData?.name}
+        </div>
+        <div className="detail-subtitle">
+          {groupId
+            ? `Created by ${groupData?.User?.name}, ${moment(
+                groupData?.createdAt
+              ).format("lll")}`
+            : "fff"}
+        </div>
+        {/* 1 May 2020 */}
         <div className="detail-buttons">
           <button className="detail-button">
             <svg

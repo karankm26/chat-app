@@ -1,7 +1,16 @@
 import { Avatar } from "@mui/material";
+import { useEffect, useState } from "react";
+import { getLastMessage } from "../utils/getLastMessage";
 
-export default function UserList({ users, setGroupId, setReceiver }) {
+export default function UserList({
+  users,
+  setGroupId,
+  setReceiver,
+  sender,
+  receiver,
+}) {
   const currentUser = localStorage.getItem("currentUser");
+  // console.log(getLastMessage(sender, receiver));
   return (
     <div className="conversation-area">
       {/* msg active , msg online   */}
@@ -38,7 +47,10 @@ export default function UserList({ users, setGroupId, setReceiver }) {
                 {item?.name ? item?.name : item?.group_name}
               </div>
               <div className="msg-content">
-                <span className="msg-message">What time was our meet</span>
+                <span className="msg-message">
+                  {/* What time was our meet {getLastMessage(sender, receiver)} */}
+                  {/* {getLastMessage(sender, receiver)} */}
+                </span>
                 <span className="msg-date">20m</span>
               </div>
             </div>
