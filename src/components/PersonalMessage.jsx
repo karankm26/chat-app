@@ -15,6 +15,7 @@ import { stylesDate } from "../utils/toggleStyle";
 import EmojiPicker from "emoji-picker-react";
 
 const socket = io(import.meta.env.VITE_API_URL);
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function PersonalMessage({ receiver, receiverData, user }) {
   const dispatch = useDispatch();
@@ -40,7 +41,7 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
     if (sender && receiver) {
       socket.emit("join", { sender, receiver });
       axios
-        .get(`${import.meta.env.VITE_API_URL}/messages/${sender}/${receiver}`)
+        .get(`${API_URL}/messages/${sender}/${receiver}`)
         .then((response) => setMessages(response.data))
         .catch((error) => console.error(error));
 
@@ -91,6 +92,10 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
 
       try {
         await messagePostApi(formData);
+
+        // await axios.post(`http://localhost:8080/api/add-post`, formData, {
+        //   headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        // });
         setMessages([
           ...messages,
           {
@@ -106,9 +111,9 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
       } catch (error) {}
     }
   };
-  const handeSelectImage = () => {
-    setSelectedImage(e.target.files[0]);
-  };
+  // const handeSelectImage = () => {
+  //   setSelectedImage(e.target.files[0]);
+  // };
 
   const handleEmojiClick = (e) => {
     const emoji = e.emoji;
@@ -139,73 +144,72 @@ export default function PersonalMessage({ receiver, receiverData, user }) {
         </div>
       )}
 
-      {/* <ScrollToBottom mode="bottom" className="chat-area-main"> */}
+      {/* <ScrollToBottom mode="bottom"> */}
       <div
         className="chat-area-main"
         {...getRootProps()}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* <ScrollToBottom mode="bottom"> */}
-        {messages.length
-          ? messages.map((item, index) => (
-              <div
-                className={`chat-msg ${+item.sender === sender && "owner"}`}
-                key={index}
-              >
-                <div className="chat-msg-profile">
-                  <Avatar
-                    html
-                    alt="Group icon"
-                    src={
-                      +item.sender === sender
-                        ? user?.image
-                        : receiverData?.image
-                    }
-                    className="chat-msg-img"
-                    sx={{ width: 30, height: 30 }}
-                  />
-
-                  <div className="chat-msg-date">
-                    {formatTimestamp(item?.timestamp)}
-                  </div>
-                </div>
-                <div className="chat-msg-content">
-                  {+item.sender === sender && (
-                    <IoIosArrowDown
-                      className="position-absolute ico"
-                      style={{ right: "10px", top: "3px" }}
+        <ScrollToBottom mode="bottom">
+          {messages.length
+            ? messages.map((item, index) => (
+                <div
+                  className={`chat-msg ${+item.sender === sender && "owner"}`}
+                  key={index}
+                >
+                  <div className="chat-msg-profile">
+                    <Avatar
+                      html
+                      alt="Group icon"
+                      src={
+                        +item.sender === sender
+                          ? user?.image
+                          : receiverData?.image
+                      }
+                      className="chat-msg-img"
+                      sx={{ width: 30, height: 30 }}
                     />
-                  )}
-                  {/* <div className="chat-menu">
+
+                    <div className="chat-msg-date">
+                      {formatTimestamp(item?.timestamp)}
+                    </div>
+                  </div>
+                  <div className="chat-msg-content">
+                    {+item.sender === sender && (
+                      <IoIosArrowDown
+                        className="position-absolute ico"
+                        style={{ right: "10px", top: "3px" }}
+                      />
+                    )}
+                    {/* <div className="chat-menu">
                     <ul className="px-4 py-1 m-0">
                       <li>Edit</li>
                       <li>Delete</li>
                     </ul>
                   </div> */}
 
-                  <div className="chat-msg-text">
-                    {item?.image ? (
-                      <img
-                        src={item?.image}
-                        alt
-                        className="rounded"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          if (imageLightBoxRef.current) {
-                            imageLightBoxRef.current.handleImageClick(item);
-                          }
-                        }}
-                      />
-                    ) : null}
-                    {item?.message}
+                    <div className="chat-msg-text">
+                      {item?.image ? (
+                        <img
+                          src={item?.image}
+                          alt={item?.name}
+                          className="rounded"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            if (imageLightBoxRef.current) {
+                              imageLightBoxRef.current.handleImageClick(item);
+                            }
+                          }}
+                        />
+                      ) : null}
+                      {item?.message}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          : ""}
-        {/* </ScrollToBottom> */}
+              ))
+            : ""}
+        </ScrollToBottom>
       </div>
-      <input type="file" hidden onChange={handeSelectImage} />
 
       <form
         className="chat-area-footer"

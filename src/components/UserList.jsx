@@ -1,15 +1,18 @@
 import { Avatar } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getLastMessage } from "../utils/getLastMessage";
+import { Addfriends } from "./Addfriends";
 
 export default function UserList({
   users,
+  friends,
   setGroupId,
   setReceiver,
   sender,
   receiver,
 }) {
   const currentUser = localStorage.getItem("currentUser");
+  const dialogRef = useRef();
   // console.log(getLastMessage(sender, receiver));
   return (
     <div className="conversation-area">
@@ -60,8 +63,14 @@ export default function UserList({
         <div className="msg">No Chat Found</div>
       )}
 
-      <button className="add" />
+      <button
+        className="add"
+        onClick={() => {
+          if (dialogRef.current) dialogRef.current.handleOpen();
+        }}
+      />
       <div className="overlay" />
+      <Addfriends ref={dialogRef} friends={friends} />
     </div>
   );
 }

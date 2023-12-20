@@ -84,6 +84,7 @@ export default function Home() {
             setReceiver={setReceiver}
             sender={sender}
             receiver={receiver}
+            friends={friends}
           />
           <Chat
             groupId={groupId}

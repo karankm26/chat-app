@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 export default function UserDetails({ groups, groupId, friends, receiver }) {
   const [receiverData, setReceiverData] = useState({});
   const [groupData, setGroupData] = useState({});
+  const [selected, setSelected] = useState("blue");
 
   useEffect(() => {
     if (receiver && friends) {
@@ -19,6 +20,10 @@ export default function UserDetails({ groups, groupId, friends, receiver }) {
       setGroupData(filterReceiver);
     }
   }, [groups, groupId]);
+
+  const handleModeChange = (item) => {
+    document.body.setAttribute("data-theme", item);
+  };
 
   return (
     <div className="detail-area">
@@ -80,10 +85,26 @@ export default function UserDetails({ groups, groupId, friends, receiver }) {
         <div className="detail-change">
           Change Color
           <div className="colors">
-            <div className="color blue selected" data-color="blue" />
-            <div className="color purple" data-color="purple" />
-            <div className="color green" data-color="green" />
-            <div className="color orange" data-color="orange" />
+            <div
+              className="color blue selected"
+              data-color="blue"
+              onClick={() => handleModeChange("blue")}
+            />
+            <div
+              className="color purple "
+              data-color="purple"
+              onClick={() => handleModeChange("purple")}
+            />
+            <div
+              className="color green"
+              data-color="green"
+              onClick={() => handleModeChange("green")}
+            />
+            <div
+              className="color orange"
+              data-color="orange"
+              onClick={() => handleModeChange("orange")}
+            />
           </div>
         </div>
         <div className="detail-change">

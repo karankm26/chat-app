@@ -1,12 +1,11 @@
 import { Avatar } from "@mui/material";
 import React, { useEffect, useState } from "react";
-// import { updateUser } from "../features/apiSlice";
-import { useDispatch } from "react-redux";
 
 export default function Navbar({ user }) {
   // const dispatch = useDispatch();
   const [mode, setMode] = useState(false);
   const modeType = localStorage.getItem("mode");
+  const [searchItem, setSearchItem] = useState([]);
 
   useEffect(() => {
     if (modeType === "true") {
@@ -19,6 +18,10 @@ export default function Navbar({ user }) {
     item ? body.classList.add("dark-mode") : body.classList.remove("dark-mode");
     localStorage.setItem("mode", item);
     // dispatch(updateUser({}));
+  };
+
+  const handleSearchUser = (e) => {
+    console.log("object", e.target.value);
   };
 
   return (
@@ -37,7 +40,11 @@ export default function Navbar({ user }) {
         </svg>
       </div>
       <div className="search-bar">
-        <input type="text" placeholder="Search..." />
+        <input
+          type="text"
+          placeholder="Search..."
+          onChange={handleSearchUser}
+        />
       </div>
       <div className="user-settings">
         <div
