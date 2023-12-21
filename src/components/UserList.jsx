@@ -10,6 +10,8 @@ export default function UserList({
   setReceiver,
   sender,
   receiver,
+  user,
+  userAll,
 }) {
   const currentUser = localStorage.getItem("currentUser");
   const dialogRef = useRef();
@@ -70,7 +72,13 @@ export default function UserList({
         }}
       />
       <div className="overlay" />
-      <Addfriends ref={dialogRef} friends={friends} />
+      <Addfriends
+        ref={dialogRef}
+        friends={friends}
+        sender={sender}
+        user={user}
+        userAll={userAll}
+      />
     </div>
   );
 }

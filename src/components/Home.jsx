@@ -37,7 +37,7 @@ export default function Home() {
   }, [id, userData]);
 
   useEffect(() => {
-    if (user && group) {
+    if (user && group && userAll) {
       const filteredUsers = userAll.filter(
         (item) =>
           user.friends && user.friends.some((friendId) => friendId === item.id)
@@ -60,7 +60,7 @@ export default function Home() {
       setGroups(filteredGroups);
       setUsers([...filteredUsers, ...filteredGroups]);
     }
-  }, [user, group]);
+  }, [user, group, userAll]);
 
   useEffect(() => {
     if (currentUser) {
@@ -85,6 +85,8 @@ export default function Home() {
             sender={sender}
             receiver={receiver}
             friends={friends}
+            user={user}
+            userAll={userAll}
           />
           <Chat
             groupId={groupId}

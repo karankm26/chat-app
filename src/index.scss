@@ -949,19 +949,45 @@ html {
 .css-qfso29-MuiTypography-root-MuiDialogContentText-root,
 .MuiAutocomplete-input,
 .MuiInputLabel-root,
+.css-uhb5lp,
 .css-i4bv87-MuiSvgIcon-root,
-.css-1glvl0p-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-clearIndicator {
+.MuiDialogContent-root,
+.css-1ty026z {
   background-color: var(--theme-bg-color) !important;
   color: var(--body-color) !important;
 }
-.MuiAutocomplete-listbox {
-  background-color: var(--input-bg) !important;
+
+.css-l4u8b9-MuiInputBase-root-MuiInput-root:before {
+  border-color: var(--border-color) !important;
+}
+.css-l4u8b9-MuiInputBase-root-MuiInput-root {
+  background-color: var(--theme-bg-color) !important;
   color: var(--body-color) !important;
 }
-// .MuiAutocomplete-popupIndicatorOpen {
-//   z-index: 9999 !important;
-// }
-// .mui-btn {
-//   background-color: var(--theme-color) !important;
-//   color: var(--body-color) !important;
-// }
+.css-1x51dt5-MuiInputBase-input-MuiInput-input:-webkit-autofill {
+  background-color: var(--theme-bg-color) !important;
+  color: var(--body-color) !important;
+}
+.css-1t1j96h-MuiPaper-root-MuiDialog-paper,
+.css-uhb5lp {
+  border-radius: 15px !important;
+}
+.mui-dropdown {
+  background-color: var(--theme-bg-color) !important;
+  color: var(--body-color) !important;
+  ul {
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+  }
+  li {
+    padding: 7px 0 7px 12px !important;
+    border-bottom: 1px solid var(--border-color);
+  }
+  li:hover {
+    background-color: #38393a;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+}

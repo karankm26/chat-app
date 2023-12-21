@@ -114,10 +114,10 @@ const apiSlice = createSlice({
     userError: null,
     userSuccess: null,
 
-    updateUser: {},
-    updateUserLoading: false,
-    updateUserError: null,
-    updateUserSuccess: null,
+    updateUserData: {},
+    updateUserDataLoading: false,
+    updateUserDataError: null,
+    updateUserDataSuccess: null,
 
     group: [],
     groupLoading: false,
@@ -204,16 +204,16 @@ const apiSlice = createSlice({
 
     builder
       .addCase(updateUser.pending, (state) => {
-        state.updateUserLoading = true;
+        state.updateUserDataLoading = true;
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        state.updateUserLoading = false;
-        state.updateUser = action.payload;
-        state.updateUserSuccess = true;
+        state.updateUserDataLoading = false;
+        state.updateUserData = action.payload;
+        state.updateUserDataSuccess = true;
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.updateUserLoading = false;
-        state.updateUserError = action.error.message;
+        state.updateUserDataLoading = false;
+        state.updateUserDataError = action.error.message;
       });
 
     builder
