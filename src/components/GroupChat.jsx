@@ -155,10 +155,33 @@ export default function GroupChat({ groupId }) {
     <div>
       <div className="chat">
         <div className="chat-header clearfix position-relative">
-          <div className="align-items-center">
-            <div className="">
+          <div className=" d-flex justify-content-between align-items-center">
+            <div className="d-flex">
+              {groups?.image ? (
+                <div>
+                  <img
+                    src={
+                      groups?.image
+                        ? groups?.image
+                        : "https://bootdey.com/img/Content/avatar/avatar2.png"
+                    }
+                    alt="avatar"
+                    style={{
+                      width: "43px",
+                      height: "43px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </div>
+              ) : (
+                <div>
+                  {groups?.group_name && (
+                    <InitialsAvatar name={groups?.group_name} />
+                  )}
+                </div>
+              )}
               <div>
-                <img
+                {/* <img
                   src={
                     groups?.image
                       ? groups?.image
@@ -170,7 +193,7 @@ export default function GroupChat({ groupId }) {
                     height: "43px",
                     borderRadius: "50%",
                   }}
-                />
+                /> */}
               </div>
               <div className="chat-about">
                 <h6 className="m-0">{groups?.group_name}</h6>
@@ -199,7 +222,7 @@ export default function GroupChat({ groupId }) {
         </div>
         {/* <div className="chat-history" id="style-2"> */}
         <ScrollToBottom className="chat-history" mode="bottom">
-        <ul className="m-b-0 px-2 pt-3">
+          <ul className="m-b-0 px-2 pt-3">
             {messages.length
               ? messages.map((item) =>
                   +item.sender === sender ? (

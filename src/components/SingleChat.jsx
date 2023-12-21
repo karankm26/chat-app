@@ -59,6 +59,7 @@ export default function SingleChat({ receiver }) {
       await axios.put(`${API_URL}/messages/${editMessageId}`, {
         message: newMessage,
       });
+      setEditMessageId(null);
       setNewMessage("");
     } else {
       const formData = new FormData();
@@ -153,7 +154,6 @@ export default function SingleChat({ receiver }) {
       console.log(scrollId.current);
     }
   }, [scrollId]);
-
 
   return (
     <div>

@@ -170,6 +170,7 @@ export default function Home() {
 
   return (
     <>
+      {/* <Notifications /> */}
       <div className="container-fluid">
         <div className="row clearfix ">
           {/* <div className="col-lg-12 m-0 p-0"> */}
@@ -330,7 +331,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
       <>
         {/* MUI Dialog */}
         <MuiDailog
